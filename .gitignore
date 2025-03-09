@@ -1,5 +1,9 @@
 
+# Ignore Visual Studio temporary files
+.vs/
+
 framebuffer.tga
+
 # Prerequisites
 *.d
 
