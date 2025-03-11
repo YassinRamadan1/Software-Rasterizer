@@ -12,8 +12,9 @@ class vec2 {
 public:
 
 	float x, y;
+	
 	vec2() {}
-
+	vec2(float x) : x(x), y(x) {}
 	vec2(float x, float y) : x(x), y(y) {}
 
 	float& operator[](int i) {
@@ -34,8 +35,9 @@ class vec3 {
 public:
 	
 	float x, y, z;
-	vec3() {}
 
+	vec3() {}
+	vec3(float x) : x(x), y(x), z(x) {}
 	vec3(float x, float y, float z): x(x), y(y), z(z) {}
 
 	

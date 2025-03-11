@@ -68,51 +68,35 @@ void drawScanLine(int x1, int x2, int y, TGAImage& framebuffer, TGAColor c) {
         framebuffer.set(x1++, y, c);
 }
 
+// calculating P1P2 x P1P3
+int cross(int x1, int y1, int x2, int y2, int x3, int y3) {
+
+    x2 -= x1, y2 -= y1, x3 -= x1, y3 -= y1;
+    return x2 * y3 - x3 * y2;
+}
+
 void drawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3, TGAImage& framebuffer, TGAColor c) {
 
-    // To ensure that p1 > p2 > p3 in the y direction
-    if (y1 < y2)
-        std::swap(x1, x2), std::swap(y1, y2);
-    if (y1 < y3)
-        std::swap(x1, x3), std::swap(y1, y3);
-    if (y2 < y3)
-        std::swap(x2, x3), std::swap(y2, y3);
+    // get the bounding box
+    int xmin = std::min(x1, std::min(x2, x3)), ymin = std::min(y1, std::min(y2, y3)),
+        xmax = std::max(x1, std::max(x2, x3)), ymax = std::max(y1, std::max(y2, y3));
 
-    // Draw the Top part of the triangle
-    int dx1 = x2 - x1, dy1 = y2 - y1, dx2 = x3 - x1, dy2 = y3 - y1,
-        start = x1, end = x1, y = y1;
-
-    framebuffer.set(start, y, c);
-
-    if (y1 == y2)
-        drawScanLine(x1, x2, y2, framebuffer, c);
-
-    while (y > y2) {
-        y--;
-
-        // getting the next point for line 1
-        start = std::round(x1 + 1.0f * dx1 * (y - y1) / dy1);
-
-        // getting  the next point for line 2
-        end = std::round(x1 + 1.0f * dx2 * (y - y1) / dy2);
-
-        drawScanLine(start, end, y, framebuffer, c);
+    
+    double area = cross(x1, y1, x2, y2, x3, y3);
+    #pragma omp parallel for
+    for (int y = ymin; y < ymax + 1; y++) {
+        for (int x = xmin; x < xmax + 1; x++) {
+            
+            // get the barycentric coordinates u * P1 + v * P2 + w * P3
+            // watch out for orientation!
+            double u = cross(x, y, x2, y2, x3, y3) / area,
+                v = cross(x, y, x3, y3, x1, y1) / area,
+                w = cross(x, y, x1, y1, x2, y2) / area;
+                
+            if (u < 0.0f || v < 0.0f || w < 0.0f)
+                continue;
+            framebuffer.set(x, y, c);
+            
+        }
     }
-
-    // Draw the bottom part of the triangle
-    dx1 = x3 - x2, dy1 = y3 - y2;
-
-
-    while (y > y3) {
-        y--;
-
-        // getting the next point for the new line 3 from p2 to p3
-        start = std::round(x2 + 1.0f * dx1 * (y - y2) / dy1);
-
-        // still getting the next point for line 2
-        end = std::round(x1 + 1.0f * dx2 * (y - y1) / dy2);
-
-        drawScanLine(start, end, y, framebuffer, c);
-    }
-
 }
