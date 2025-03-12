@@ -1,7 +1,9 @@
 #pragma once
+#include <iostream>
 #include <cstdint>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 #pragma pack(push,1)
 struct TGAHeader {

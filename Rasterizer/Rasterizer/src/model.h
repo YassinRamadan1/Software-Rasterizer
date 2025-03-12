@@ -6,52 +6,7 @@
 #include <vector>
 #include "tgaimage.h"
 #include "draw.h"
-
-class vec2 {
-
-public:
-
-	float x, y;
-	vec2() {}
-
-	vec2(float x, float y) : x(x), y(y) {}
-
-	float& operator[](int i) {
-		
-		switch (i) {
-		case 0:
-			return x;
-		case 1:
-			return y;
-		default:
-			throw std::invalid_argument("Subscript out of range!\n");
-		}
-	}
-};
-
-class vec3 {
-	
-public:
-	
-	float x, y, z;
-	vec3() {}
-
-	vec3(float x, float y, float z): x(x), y(y), z(z) {}
-
-	
-	float& operator[](int i) {
-		switch (i) {
-		case 0:
-			return x;
-		case 1:
-			return y;
-		case 2:
-			return z;
-		default:
-			throw std::invalid_argument("Subscript out of range!\n");
-		}
-	}
-};
+#include "geometry.h"
 
 struct Face {
 	
@@ -70,7 +25,7 @@ class model {
 
 public:
 
-	model(std::string location, TGAColor color, TGAImage& framebuffer) : m_Color(color), m_Framebuffer(framebuffer) {
+	model(std::string location, TGAImage& framebuffer) : m_Framebuffer(framebuffer) {
 		
 		std::ifstream file;
 		file.open(location);
@@ -97,7 +52,7 @@ public:
 			
 			if (tokens[0] == "v") {
 				for (int i = 1; i < 4; i++)
-					v[i - 1] = std::stof(tokens[i]);
+					v.raw[i - 1] = std::stof(tokens[i]);
 				m_Vertices.push_back(v);
 			}
 			else if (tokens[0] == "f") {
@@ -123,22 +78,46 @@ public:
 
 		return vec2((v.x + 1.0f) * m_Framebuffer.width() / 2.0f, (v.y + 1.0f) * m_Framebuffer.height() / 2.0f);
 	}
-	void draw() {
+	void draw(RenderingMode m) {
 
-		for (int i = 0; i < m_Faces.size(); i++) {
-			vec2 v[3];
-			v[0] = project(m_Vertices[m_Faces[i].points[0]]);
-			v[1] = project(m_Vertices[m_Faces[i].points[1]]);
-			v[2] = project(m_Vertices[m_Faces[i].points[2]]);
+		vec3 world[3];
+		vec2i screen[3];
+		TGAColor c = { 255, 255, 255 };
+		vec3 lightDir(0, 0, -1);
 
-			drawTriangleWireFrame(std::round(v[0].x), std::round(v[0].y), std::round(v[1].x), std::round(v[1].y), 
-				std::round(v[2].x), std::round(v[2].y), m_Framebuffer, m_Color);
+		switch (m) {
+			case WIREFRAME:
+				for (int i = 0; i < m_Faces.size(); i++) {
+					
+					for (int j = 0; j < 3; j++) {
+						world[j] = m_Vertices[m_Faces[i].points[j]];
+						screen[j].x = std::round((world[j].x + 1.0f) * m_Framebuffer.width() / 2.0f);
+						screen[j].y = std::round((world[j].y + 1.0f) * m_Framebuffer.height() / 2.0f);
+					}
+
+					drawTriangleWireFrame(screen[0], screen[1], screen[2], m_Framebuffer, c);
+				}
+			case SOLID:
+				for (int i = 0; i < m_Faces.size(); i++) {
+					
+					for (int j = 0; j < 3; j++) {
+						world[j] = m_Vertices[m_Faces[i].points[j]];
+						screen[j].x = std::round((world[j].x + 1.0f) * m_Framebuffer.width() / 2.0f);
+						screen[j].y = std::round((world[j].y + 1.0f) * m_Framebuffer.height() / 2.0f);
+					}
+
+					vec3 normal = (world[2] - world[0]) ^ (world[1] - world[0]).normalize();
+					float intensity = normal * lightDir;
+					unsigned char v = intensity * 255;
+
+					if (intensity > 0.0f)
+						drawTriangleSolid(screen[0], screen[1], screen[2], m_Framebuffer, {v, v, v});
+				}
 		}
 	}
 private:
 
 	std::vector<vec3> m_Vertices;
 	std::vector<Face> m_Faces;
-	TGAColor m_Color;
 	TGAImage& m_Framebuffer;
 };

@@ -1,0 +1,15 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(516,5): warning MSB8004: Intermediate Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Intermediate Directory.
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  draw.cpp
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(92,64): warning C4101: 'w': unreferenced local variable
+  main.cpp
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(130,21): warning C4018: '<': signed/unsigned mismatch
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(137,35): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(137,15): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(136,96): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(136,76): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(136,56): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\model.h(136,36): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+  tgaimage.cpp
+  Generating Code...
+  Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\Win32\Debug\Rasterizer.exe
