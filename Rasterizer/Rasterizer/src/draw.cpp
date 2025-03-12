@@ -1,19 +1,19 @@
 #include "draw.h"
 
-void drawLine(int x1, int y1, int x2, int y2, TGAImage& framebuffer, TGAColor c) {
+void drawLine(vec2i v1, vec2i v2, TGAImage& framebuffer, TGAColor c) {
 
     bool isTransposed = false;
-    if (abs(x2 - x1) < abs(y2 - y1)) { // transpose 
-        std::swap(x1, y1);
-        std::swap(x2, y2);
+    if (abs(v2.x - v1.x) < abs(v2.y - v1.y)) { // transpose 
+        std::swap(v1.x, v1.y);
+        std::swap(v2.x, v2.y);
         isTransposed = true;
     }
-    if (x2 - x1 < 0) { // draw from left to right
-        std::swap(x1, x2);
-        std::swap(y1, y2);
+    if (v2.x - v1.x < 0) { // draw from left to right
+        std::swap(v1.x, v2.x);
+        std::swap(v1.y, v2.y);
     }
 
-    int dx = x2 - x1, dy = y2 - y1, x = x1, y = y1;
+    int dx = v2.x - v1.x, dy = v2.y - v1.y, x = v1.x, y = v1.y;
 
     if (isTransposed)
         framebuffer.set(y, x, c);
@@ -24,7 +24,7 @@ void drawLine(int x1, int y1, int x2, int y2, TGAImage& framebuffer, TGAColor c)
 
         int d = -dx - 2 * dy, d1 = -2 * dy, d2 = -2 * (dx + dy);
 
-        while (x < x2) {
+        while (x < v2.x) {
             x++;
             if (d < 0)
                 d += d1;
@@ -39,7 +39,7 @@ void drawLine(int x1, int y1, int x2, int y2, TGAImage& framebuffer, TGAColor c)
     else {
 
         int d = dx - 2 * dy, d1 = -2 * dy, d2 = 2 * (dx - dy);
-        while (x < x2) {
+        while (x < v2.x) {
             x++;
             if (d > 0)
                 d += d1;
@@ -53,11 +53,11 @@ void drawLine(int x1, int y1, int x2, int y2, TGAImage& framebuffer, TGAColor c)
     }
 }
 
-void drawTriangleWireFrame(int x1, int y1, int x2, int y2, int x3, int y3, TGAImage& framebuffer, TGAColor c) {
+void drawTriangleWireFrame(vec2i v1, vec2i v2, vec2i v3, TGAImage& framebuffer, TGAColor c) {
 
-    drawLine(x1, y1, x2, y2, framebuffer, c);
-    drawLine(x2, y2, x3, y3, framebuffer, c);
-    drawLine(x3, y3, x1, y1, framebuffer, c);
+    drawLine(v1, v2, framebuffer, c);
+    drawLine(v2, v3, framebuffer, c);
+    drawLine(v3, v1, framebuffer, c);
 }
 
 void drawScanLine(int x1, int x2, int y, TGAImage& framebuffer, TGAColor c) {
@@ -75,23 +75,26 @@ int cross(int x1, int y1, int x2, int y2, int x3, int y3) {
     return x2 * y3 - x3 * y2;
 }
 
-void drawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3, TGAImage& framebuffer, TGAColor c) {
+void drawTriangleSolid(vec2i v1, vec2i v2, vec2i v3, TGAImage& framebuffer, TGAColor c) {
 
     // get the bounding box
-    int xmin = std::min(x1, std::min(x2, x3)), ymin = std::min(y1, std::min(y2, y3)),
-        xmax = std::max(x1, std::max(x2, x3)), ymax = std::max(y1, std::max(y2, y3));
-
+    int xmin = std::min(v1.x, std::min(v2.x, v3.x)), ymin = std::min(v1.y, std::min(v2.y, v3.y)),
+        xmax = std::max(v1.x, std::max(v2.x, v3.x)), ymax = std::max(v1.y, std::max(v2.y, v3.y));
     
-    double area = cross(x1, y1, x2, y2, x3, y3);
+    double area = cross(v1.x, v1.y, v2.x, v2.y, v3.x, v3.y);
+
+    if (area < 1.0f)
+        return;
+    // it is an instruction to OpenMP to parallelize the loop since it is perfectly parallel
     #pragma omp parallel for
     for (int y = ymin; y < ymax + 1; y++) {
         for (int x = xmin; x < xmax + 1; x++) {
             
             // get the barycentric coordinates u * P1 + v * P2 + w * P3
             // watch out for orientation!
-            double u = cross(x, y, x2, y2, x3, y3) / area,
-                v = cross(x, y, x3, y3, x1, y1) / area,
-                w = cross(x, y, x1, y1, x2, y2) / area;
+            double u = cross(x, y, v2.x, v2.y, v3.x, v3.y) / area,
+                v = cross(x, y, v3.x, v3.y, v1.x, v1.y) / area,
+                w = 1 - u - v;
                 
             if (u < 0.0f || v < 0.0f || w < 0.0f)
                 continue;
