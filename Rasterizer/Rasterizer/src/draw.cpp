@@ -317,11 +317,43 @@ void drawTriangleSolid(utility::Triangle& triangle, TGAImage& tex, float* zBuffe
                 continue;
 
             // early depth testing
-            float z_value = alpha * z0 + beta * z1 + gamma * z2;
-            if (z_value < zBuffer[index + x]) {
+            float z_interp = alpha * z0 + beta * z1 + gamma * z2;
+            if (projectionType == true) {
+                z_interp = alpha * 1 / z0 + beta * 1 / z1 + gamma * 1 / z2;
+                z_interp = 1 / z_interp;
+			}
 
-                zBuffer[index + x] = z_value;
-               
+            if (z_interp < zBuffer[index + x]) {
+
+                float r_interp, g_interp, b_interp;
+                unsigned char r = 0, g = 0, b = 0;
+                if (projectionType == true) {
+                    r_interp = alpha * triangle.color[0].r + beta * triangle.color[1].r + gamma * triangle.color[2].r;
+                    r_interp *= z_interp;
+                    g_interp = alpha * triangle.color[0].g + beta * triangle.color[1].g + gamma * triangle.color[2].g;
+                    g_interp *= z_interp;
+                    b_interp = alpha * triangle.color[0].b + beta * triangle.color[1].b + gamma * triangle.color[2].b;
+                    b_interp *= z_interp;
+
+                    // map the z_interp to the viewport space just for consistency
+
+                }
+                else {
+					r_interp = alpha * triangle.color[0].r + beta * triangle.color[1].r + gamma * triangle.color[2].r;
+					g_interp = alpha * triangle.color[0].g + beta * triangle.color[1].g + gamma * triangle.color[2].g;
+					b_interp = alpha * triangle.color[0].b + beta * triangle.color[1].b + gamma * triangle.color[2].b;
+				}
+
+                // clamp the color values
+                r = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(r_interp)), 0, 255));
+                g = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(g_interp)), 0, 255));
+                b = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(b_interp)), 0, 255));
+                
+                // set the framebuffer color
+                framebuffer.set(x, y, {b, g, r});
+
+                // update the zBuffer
+                zBuffer[index + x] = z_interp;
             }
 
         }
@@ -330,8 +362,10 @@ void drawTriangleSolid(utility::Triangle& triangle, TGAImage& tex, float* zBuffe
 
 void rasterize(utility::Triangle triangle,utility::Transform& transform, TGAImage& texture, float* zBuffer, TGAImage& framebuffer) {
     
-    // perspective 1 orthographic 0
-    bool projectionType = 0;// (transform.projection[3][2] != 0);
+    // perspective true, orthographic false
+    // knowing the projection type is important for knowing how to interpolate the attribute values
+
+    bool projectionType = (abs(transform.projection[3][2]) < utility::EPSILON);
     glm::mat4 mvp = transform.getModelViewProjection();
     std::vector<utility::Triangle> triangles;
 
@@ -340,19 +374,20 @@ void rasterize(utility::Triangle triangle,utility::Transform& transform, TGAImag
 		triangle.position[i] =  mvp * triangle.position[i];
 	}
 /*
+	// backface culling
     float area = glm::length(glm::cross(glm::vec3(triangle.position[1]) - glm::vec3(triangle.position[0]),
         glm::vec3(triangle.position[2]) - glm::vec3(triangle.position[0])));
     
-    // cull backfaces first and if the triangle has zero area
     if (area < 1.0f)
         return;
-        */
+*/
 
     // clip the triangle against the near and far planes
     triangles = clip(triangle);
 
     // perform homogenous division and then viewport transformation
     for (auto& triangle : triangles) {
+
         for (int i = 0; i < 3; i++) {
             triangle.position[i] /= triangle.position[i].w;
             triangle.position[i] = transform.viewport * triangle.position[i];
@@ -362,4 +397,3 @@ void rasterize(utility::Triangle triangle,utility::Transform& transform, TGAImag
         drawTriangleSolid(triangle, texture, zBuffer, framebuffer, projectionType, transform.near, transform.far);
     }
 }
-

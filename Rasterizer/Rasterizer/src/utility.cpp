@@ -28,11 +28,7 @@ namespace utility {
 
 		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
 
-		return glm::mat4(1.0f / r, 0.0f, 0.0f, 0.0f,
-						 0.0f, 1.0f / t, 0.0f, 0.0f,
-						 0.0f, 0.0f, -2.0f / (far - near), 0.0f,
-						 0.0f, 0.0f, -(far + near) / (far - near), 1.0f
-						);
+		return glm::ortho(-r, r, -t, t, near, far);
 	}
 }
 

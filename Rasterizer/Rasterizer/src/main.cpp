@@ -34,14 +34,13 @@ int main(int argc, char** argv) {
     glm::mat4 proj2 = utility::orthographicProjection(glm::radians(2 * myCamera.m_Zoom), 1.0f, 1.0f, 100.0f);
     glm::mat4  viewport = utility::viewport(0, 0, width, height);
 
-    utility::Transform transform(model, view, proj, viewport);
-    transform.near = 0.1f, transform.far = 100.0f;
+    utility::Transform transform(model, view, proj2, viewport);
+    transform.near = 1.0f, transform.far = 100.0f;
     utility::Triangle triangle(v1, v2, v3, glm::vec3(255.0f, 0.0f, 0.0f), glm::vec3(0.0f, 255.0f, 0.0f), glm::vec3(0.0f, 0.0f, 255.0f));
     rasterize(triangle, transform, texture, zBuffer, framebuffer);
 
-      //  drawTriangleSolid(glm::vec3(v1.x, v1.y, v1.z), glm::vec3(v2.x, v2.y, v2.z), glm::vec3(v3.x, v3.y, v3.z), {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, texture, zBuffer, framebuffer, white);
     delete zBuffer;
-    //framebuffer.set(0, 1, red);
+    
     framebuffer.write_tga_file("framebuffer.tga");
     return 0;
 }

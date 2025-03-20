@@ -23,4 +23,11 @@ C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(296,14): warning C
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(296,14): warning C4244:             _Ty=float
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(296,14): warning C4244:         ]
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(320,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(322,59): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(331,89): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(333,89): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(335,89): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(342,74): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(343,74): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\draw.cpp(344,74): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\x64\Debug\Rasterizer.exe
