@@ -171,7 +171,7 @@
   <ItemGroup>
     <ClInclude Include="src\draw.h" />
     <ClInclude Include="src\utility.h" />
-    <ClInclude Include="src\model.h" />
+    <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\tgaimage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

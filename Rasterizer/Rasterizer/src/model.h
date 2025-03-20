@@ -17,11 +17,11 @@ struct Face {
 
 };
 
-class model {
+class Model {
 
 public:
 
-	model(std::string location, TGAImage& framebuffer) : m_Framebuffer(framebuffer) {
+	Model(std::string location, TGAImage& framebuffer) : m_Framebuffer(framebuffer) {
 		
 		std::ifstream file;
 		file.open(location);
@@ -78,12 +78,16 @@ public:
 		file.close();
 	}
 
-	/*void draw(RenderingMode m, float* zBuffer, TGAImage& texture) {
+	void draw(RenderingMode m, utility::Transform&transform, float* zBuffer, TGAImage& texture) {
 
 		glm::vec3 world[3];
 		glm::vec3 tex[3];
 		glm::vec3 screen[3];
-		TGAColor c = { 255, 255, 255 };
+		glm::vec3 c1 = glm::vec3(255.0f, 0.0f, 0.0f);
+		glm::vec3 c2 = glm::vec3(0.0f, 255.0f, 0.0f);
+		glm::vec3 c3 = glm::vec3(0.0f, 0.0f, 255.0f);
+
+		TGAColor c = { 0, 0, 255 };
 		glm::vec3 lightDir(0, 0, -1);
 
 		switch (m) {
@@ -105,16 +109,11 @@ public:
 						tex[j] = m_Textures[m_Faces[i].texture[j]];
 						
 					}
-
-					glm::vec3 normal = glm::normalize(glm::cross((world[2] - world[0]), (world[1] - world[0])));
-					float intensity = glm::dot(normal, lightDir);
-					unsigned char v = intensity * 255;
-
-					if (intensity > 0.0f)
-						drawTriangleSolid(screen[0], screen[1], screen[2], glm::vec2(tex[0].x, tex[0].y), glm::vec2(tex[1].x, tex[1].y), glm::vec2(tex[2].x, tex[2].y), texture, zBuffer, m_Framebuffer, {v});
+					//rasterize(utility::Triangle(world[0], world[1], world[2], tex[0], tex[1], tex[2]), transform, texture, zBuffer, m_Framebuffer);
+					rasterize(utility::Triangle(world[0], world[1], world[2], c1, c2, c3), transform, texture, zBuffer, m_Framebuffer);
 				}
 		}
-	}*/
+	}
 private:
 
 	std::vector<glm::vec3> m_Vertices;

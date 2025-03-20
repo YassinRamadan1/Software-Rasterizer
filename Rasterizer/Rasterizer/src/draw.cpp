@@ -68,7 +68,6 @@ void drawScanLine(int x1, int x2, int y, TGAImage& framebuffer, TGAColor c) {
         framebuffer.set(x1++, y, c);
 }
 
-
 std::vector<utility::Triangle> clipFarPlane(utility::Triangle& triangle) {
 
     std::vector<utility::Triangle> triangles;
