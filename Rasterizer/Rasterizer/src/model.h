@@ -6,26 +6,22 @@
 #include <vector>
 #include "tgaimage.h"
 #include "draw.h"
-#include "geometry.h"
+#include "utility.h"
 
 struct Face {
 	
-	int points[3];
+	int position[3];
+	int texture[3];
 
 	Face() {}
 
-	Face(int p1, int p2, int p3) {
-	
-		points[0] = p1, points[0] = p2, points[0] = p3;
-	}
-
 };
 
-class model {
+class Model {
 
 public:
 
-	model(std::string location, TGAImage& framebuffer) : m_Framebuffer(framebuffer) {
+	Model(std::string location, TGAImage& framebuffer) : m_Framebuffer(framebuffer) {
 		
 		std::ifstream file;
 		file.open(location);
@@ -36,7 +32,8 @@ public:
 		}
 		std::string line, token;
 		std::stringstream iss;
-		vec3 v;
+		glm::vec3 v;
+		glm::vec3 tex;
 		Face f;
 		while (std::getline(file, line)) {
 			
@@ -52,7 +49,7 @@ public:
 			
 			if (tokens[0] == "v") {
 				for (int i = 1; i < 4; i++)
-					v.raw[i - 1] = std::stof(tokens[i]);
+					v[i - 1] = std::stof(tokens[i]);
 				m_Vertices.push_back(v);
 			}
 			else if (tokens[0] == "f") {
@@ -61,12 +58,18 @@ public:
 					iss.clear();
 					iss.str(tokens[i]);
 					std::getline(iss, token, '/');
-					f.points[i - 1] = std::stoi(token) - 1;
+					f.position[i - 1] = std::stoi(token) - 1;
+
+					std::getline(iss, token, '/');
+					f.texture[i - 1] = std::stoi(token) - 1;
 				}
 				m_Faces.push_back(f);
 			}
 			else if (tokens[0] == "vt") {
-
+				tex[0] = std::stof(tokens[2]);
+				tex[1] = std::stof(tokens[3]);
+				tex[2] = std::stof(tokens[4]);
+				m_Textures.push_back(tex);
 			}
 			else if (tokens[0] == "vn") {
 
@@ -74,25 +77,26 @@ public:
 		}
 		file.close();
 	}
-	vec2 project(vec3 v) {
 
-		return vec2((v.x + 1.0f) * m_Framebuffer.width() / 2.0f, (v.y + 1.0f) * m_Framebuffer.height() / 2.0f);
-	}
-	void draw(RenderingMode m) {
+	void draw(RenderingMode m, utility::Transform&transform, float* zBuffer, TGAImage& texture) {
 
-		vec3 world[3];
-		vec2i screen[3];
-		TGAColor c = { 255, 255, 255 };
-		vec3 lightDir(0, 0, -1);
+		glm::vec3 world[3];
+		glm::vec3 tex[3];
+		glm::vec3 screen[3];
+		glm::vec3 c1 = glm::vec3(255.0f, 0.0f, 0.0f);
+		glm::vec3 c2 = glm::vec3(0.0f, 255.0f, 0.0f);
+		glm::vec3 c3 = glm::vec3(0.0f, 0.0f, 255.0f);
+
+		TGAColor c = { 0, 0, 255 };
+		glm::vec3 lightDir(0, 0, -1);
 
 		switch (m) {
 			case WIREFRAME:
 				for (int i = 0; i < m_Faces.size(); i++) {
 					
 					for (int j = 0; j < 3; j++) {
-						world[j] = m_Vertices[m_Faces[i].points[j]];
-						screen[j].x = std::round((world[j].x + 1.0f) * m_Framebuffer.width() / 2.0f);
-						screen[j].y = std::round((world[j].y + 1.0f) * m_Framebuffer.height() / 2.0f);
+						world[j] = m_Vertices[m_Faces[i].position[j]];
+
 					}
 
 					drawTriangleWireFrame(screen[0], screen[1], screen[2], m_Framebuffer, c);
@@ -101,23 +105,19 @@ public:
 				for (int i = 0; i < m_Faces.size(); i++) {
 					
 					for (int j = 0; j < 3; j++) {
-						world[j] = m_Vertices[m_Faces[i].points[j]];
-						screen[j].x = std::round((world[j].x + 1.0f) * m_Framebuffer.width() / 2.0f);
-						screen[j].y = std::round((world[j].y + 1.0f) * m_Framebuffer.height() / 2.0f);
+						world[j] = m_Vertices[m_Faces[i].position[j]];
+						tex[j] = m_Textures[m_Faces[i].texture[j]];
+						
 					}
-
-					vec3 normal = (world[2] - world[0]) ^ (world[1] - world[0]).normalize();
-					float intensity = normal * lightDir;
-					unsigned char v = intensity * 255;
-
-					if (intensity > 0.0f)
-						drawTriangleSolid(screen[0], screen[1], screen[2], m_Framebuffer, {v, v, v});
+					//rasterize(utility::Triangle(world[0], world[1], world[2], tex[0], tex[1], tex[2]), transform, texture, zBuffer, m_Framebuffer);
+					rasterize(utility::Triangle(world[0], world[1], world[2], c1, c2, c3), transform, texture, zBuffer, m_Framebuffer);
 				}
 		}
 	}
 private:
 
-	std::vector<vec3> m_Vertices;
+	std::vector<glm::vec3> m_Vertices;
+	std::vector<glm::vec3> m_Textures;
 	std::vector<Face> m_Faces;
 	TGAImage& m_Framebuffer;
 };
