@@ -24,6 +24,9 @@
     <ClCompile Include="src\draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\tgaimage.h">
@@ -35,7 +38,7 @@
     <ClInclude Include="src\draw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\geometry.h">
+    <ClInclude Include="src\utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
