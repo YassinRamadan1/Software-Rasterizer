@@ -1,6 +1,100 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(516,5): warning MSB8004: Intermediate Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Intermediate Directory.
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
   main.cpp
-C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\utility.h(16,24): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\main.cpp(22,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\utility.h(65,24): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(162,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(162,25): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(189,17): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(151,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(151,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(151,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(151,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(151,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(152,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(152,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(152,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(152,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(152,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(153,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(153,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(153,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(153,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(153,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(154,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(154,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(154,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(154,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(154,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(178,32): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(185,99): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(187,99): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(189,99): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(216,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(216,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(216,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(216,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(216,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(217,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(217,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(217,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(217,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(217,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(218,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(218,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(218,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(218,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(218,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(219,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(219,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(219,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(219,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(219,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(241,32): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(250,89): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(251,89): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(252,89): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(272,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(272,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(272,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(272,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(272,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(273,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(273,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(273,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(273,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(273,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(274,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(274,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(274,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(274,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(274,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(275,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(275,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(275,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(275,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(275,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(336,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(336,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(336,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(336,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(336,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(337,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(337,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(337,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(337,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(337,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(338,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(338,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(338,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(338,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(338,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(339,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(339,18): warning C4244:         with
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(339,18): warning C4244:         [
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(339,18): warning C4244:             _Ty=float
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(339,18): warning C4244:         ]
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(360,32): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(368,103): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(369,103): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(56,1): warning C4715: 'TextureProcessor::getTexel': not all control paths return a value
   Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\x64\Debug\Rasterizer.exe

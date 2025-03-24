@@ -11,6 +11,55 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#include "tgaimage.h"
+
+enum RenderMode {
+	WIREFRAME,
+	SOLID
+};
+
+enum ProjectionMode {
+	PERSPECTIVE,
+	ORTHOGRAPHIC
+};
+
+enum AttributeMode {
+	COLOR,
+	TEXTURE
+};
+
+enum WrapMode {
+	REPEAT,
+	MIRROR,
+	CLAMP
+};
+
+enum FilterMode {
+	NEAREST,
+	BILINEAR,
+	TRILINEAR
+};
+
+struct Face {
+
+	int position[3];
+	int texture[3];
+	int color[3];
+	Face() {}
+
+};
+
+class Triangle {
+public:
+
+	glm::vec4 position[3];
+	glm::vec3 textureCoord[3];
+	glm::vec4 color[3];
+	glm::vec3 normal;
+
+	Triangle() {}
+};
+
 namespace utility {
 
 	const float EPSILON = 1e-5;
@@ -23,77 +72,88 @@ namespace utility {
 		FORWARD, BACKWARD, LEFT, RIGHT
 	};
 
-	float cross(glm::vec2 v1, glm::vec2 v2, glm::vec2 v3);
+	float cross(glm::vec2 v1, glm::vec2 v2, glm::vec2 v3) {
+		return (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x);
+	}
 
-	glm::mat4 viewport(int x, int y, int w, int h, int near = 0, int far = 1);
-	
-	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far);
+	glm::mat4 viewport(int x, int y, int w, int h, int near = 0, int far = 1) {
 
-	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far);
+		return glm::mat4(w / 2.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, h / 2.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, (far - near) / 2.0f, 0.0f,
+			x + w / 2.0f, y + h / 2.0f, (far + near) / 2.0f, 1.0f);
+	}
 
-    class Transform {
+	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far) {
 
-public:
-		float near, far;
-        glm::mat4 model;
-		glm::mat4 normalMatrix;
-        glm::mat4 view;
-        glm::mat4 projection;
-		glm::mat4 viewport;
+		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
 
-        // Default constructor initializes to identity matrices
-        Transform() :
-            model(1.0f),
-			normalMatrix(1.0f),
-            view(1.0f),
-            projection(1.0f),
-			viewport(1.0f) {}
+		return glm::perspective(fovy, aspectRatio, near, far);
+	}
 
-        // Parameterized constructor
-        Transform(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection, const glm::mat4& viewport) :
-            model(model),
-            view(view),
-            projection(projection),
-			viewport(viewport){}
+	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far) {
 
-        // Convenience method to get the combined MVP matrix
-        glm::mat4 getModelViewProjection() const {
-            return projection * view * model;
-        }
-    };
+		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
 
-	class Triangle {
+		return glm::ortho(-r, r, -t, t, near, far);
+	}
+
+	class Color {
+
 	public:
+		float r, g, b, a;
 
-		glm::vec4 position[3];
-		glm::vec3 textureCoord[3];
-		glm::vec4 color[3];
-		glm::vec3 normal;
+		Color() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
+		Color(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
-		Triangle() {
-
+		Color(TGAColor& tga) {
+			b = tga[0] / 255.0f;
+			g = tga[1] / 255.0f;
+			r = tga[2] / 255.0f;
+			a = tga[3] / 255.0f;
 		}
-		Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3,
-				glm::vec3 color1, glm::vec3 color2, glm::vec3 color3) {
-			
-			position[0] = glm::vec4(position1, 1.0f), position[1] = glm::vec4(position2, 1.0f),
-				position[2] = glm::vec4(position3, 1.0f);
-			color[0] = glm::vec4(color1, 255.0f), color[1] = glm::vec4(color2, 255.0f),
-				color[2] = glm::vec4(color3, 255.0f);
+		
+		void init(float v) {
+			b = g = r = v, a = 1.0f;
 		}
 
-		Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3) {
-			
-			position[0] = glm::vec4(position1, 1.0f), position[1] = glm::vec4(position2, 1.0f),
-			position[2] = glm::vec4(position3, 1.0f);
+		Color toColor(TGAColor tga) {
+			float b = tga[0] / 255.0f;
+			float g = tga[1] / 255.0f;
+			float r = tga[2] / 255.0f;
+			float a = tga[3] / 255.0f;
+			return Color(r, g, b, a);
 		}
 
-		Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3, glm::vec2 textureCoord1,
-				glm::vec2 textureCoord2, glm::vec2 textureCoord3) {
+		TGAColor toTGAColor() const {
+			TGAColor tga;
+			tga[0] = static_cast<unsigned char>(std::clamp(b * 255.0f, 0.0f, 255.0f));
+			tga[1] = static_cast<unsigned char>(std::clamp(g * 255.0f, 0.0f, 255.0f));
+			tga[2] = static_cast<unsigned char>(std::clamp(r * 255.0f, 0.0f, 255.0f));
+			tga[3] = static_cast<unsigned char>(std::clamp(a * 255.0f, 0.0f, 255.0f));
+			return tga;
+		}
+
+		Color operator+(const Color& other) const {
+			return Color(r + other.r, g + other.g, b + other.b, a + other.a);
+		}
+
+		Color operator*(float scalar) const {
+			return Color(r * scalar, g * scalar, b * scalar, a * scalar);
+		}
+
+		float& operator[](int i) {
+			switch (i) {
 			
-			position[0] = glm::vec4(position1, 1.0f), position[1] = glm::vec4(position2, 1.0f),
-				position[2] = glm::vec4(position3, 1.0f), textureCoord[0] = glm::vec3(textureCoord1, 0.0f),
-				textureCoord[1] = glm::vec3(textureCoord2, 0.0f), textureCoord[2] = glm::vec3(textureCoord3, 0.0f);
+				case 0:
+					return r;
+				case 1:
+					return g;
+				case 2:
+					return b;
+				case 3:
+					return a;
+			}
 		}
 	};
 
@@ -168,4 +228,5 @@ public:
 			m_Up = glm::cross(m_Right, m_Front);
 		}
 	};
+
 }

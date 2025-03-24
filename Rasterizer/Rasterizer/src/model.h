@@ -5,23 +5,13 @@
 #include <string>
 #include <vector>
 #include "tgaimage.h"
-#include "draw.h"
 #include "utility.h"
-
-struct Face {
-	
-	int position[3];
-	int texture[3];
-
-	Face() {}
-
-};
 
 class Model {
 
 public:
 
-	Model(std::string location, TGAImage& framebuffer) : m_Framebuffer(framebuffer) {
+	Model(std::string location) {
 		
 		std::ifstream file;
 		file.open(location);
@@ -78,46 +68,7 @@ public:
 		file.close();
 	}
 
-	void draw(RenderingMode m, utility::Transform&transform, float* zBuffer, TGAImage& texture) {
-
-		glm::vec3 world[3];
-		glm::vec3 tex[3];
-		glm::vec3 screen[3];
-		glm::vec3 c1 = glm::vec3(255.0f, 0.0f, 0.0f);
-		glm::vec3 c2 = glm::vec3(0.0f, 255.0f, 0.0f);
-		glm::vec3 c3 = glm::vec3(0.0f, 0.0f, 255.0f);
-
-		TGAColor c = { 0, 0, 255 };
-		glm::vec3 lightDir(0, 0, -1);
-
-		switch (m) {
-			case WIREFRAME:
-				for (int i = 0; i < m_Faces.size(); i++) {
-					
-					for (int j = 0; j < 3; j++) {
-						world[j] = m_Vertices[m_Faces[i].position[j]];
-
-					}
-
-					drawTriangleWireFrame(screen[0], screen[1], screen[2], m_Framebuffer, c);
-				}
-			case SOLID:
-				for (int i = 0; i < m_Faces.size(); i++) {
-					
-					for (int j = 0; j < 3; j++) {
-						world[j] = m_Vertices[m_Faces[i].position[j]];
-						tex[j] = m_Textures[m_Faces[i].texture[j]];
-						
-					}
-					//rasterize(utility::Triangle(world[0], world[1], world[2], tex[0], tex[1], tex[2]), transform, texture, zBuffer, m_Framebuffer);
-					rasterize(utility::Triangle(world[0], world[1], world[2], c1, c2, c3), transform, texture, zBuffer, m_Framebuffer);
-				}
-		}
-	}
-private:
-
 	std::vector<glm::vec3> m_Vertices;
 	std::vector<glm::vec3> m_Textures;
 	std::vector<Face> m_Faces;
-	TGAImage& m_Framebuffer;
 };

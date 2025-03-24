@@ -1,5 +1,6 @@
 #include "tgaimage.h"
 #include "Model.h"
+#include "Rasterizer.h"
 
 constexpr TGAColor white = { 255, 255, 255, 255 }; // attention, BGRA order
 constexpr TGAColor green = { 0, 255,   0, 255 };
@@ -11,38 +12,49 @@ int main(int argc, char** argv) {
     
     constexpr int width = 800;
     constexpr int height = 800;
+
     TGAImage framebuffer(width, height, TGAImage::RGB);
     TGAImage texture;
-    texture.read_tga_file("res/obj/african_head/african_head_diffuse.tga");
+    
+    const char* texLocation1 = "res/obj/african_head/african_head_diffuse.tga",
+        * texLocation2 = "res/obj/diablo3_pose/diablo3_pose_diffuse.tga";
+    texture.read_tga_file(texLocation1);
     texture.flip_vertically();
-    float* zBuffer = new float [800 * 800];
+    const char* location1 = "res/obj/african_head/african_head.obj",
+        *location2 = "res/obj/diablo3_pose/diablo3_pose.obj";
+    Model myModel(location1);
 
+    float* zBuffer = new float [800 * 800];
     for(int i = 0; i < width * height; i++)
 		zBuffer[i] = std::numeric_limits<float>::max();
-    srand(time(0));
 
-    glm::vec3 v1 = glm::vec3(-0.5f, 0.5f, -10.0f),
-        v2 = glm::vec3(0.5f, 0.5f, -2.0f),
-        v3 = glm::vec3(0.0f, -0.5f, -2.0f);
     utility::Camera myCamera;
-    //myCamera.processMouseMovement(20.0f, 0.0f);
-    
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f)); //glm::mat4(1.0f);// glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
+    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
     glm::mat4 view = myCamera.getViewMatrix();
+
     glm::mat4 proj = utility::perspectiveProjection(glm::radians(myCamera.m_Zoom), 1.0f, 1.0f, 100.0f);
     glm::mat4 proj2 = utility::orthographicProjection(glm::radians(2 * myCamera.m_Zoom), 1.0f, 1.0f, 100.0f);
+
     glm::mat4  viewport = utility::viewport(0, 0, width, height);
 
-    utility::Transform transform(model, view, proj2, viewport);
-    transform.near = 1.0f, transform.far = 100.0f;
-/*    utility::Triangle triangle(v1, v2, v3, glm::vec3(255.0f, 0.0f, 0.0f), glm::vec3(0.0f, 255.0f, 0.0f), glm::vec3(0.0f, 0.0f, 255.0f));
-    rasterize(triangle, transform, texture, zBuffer, framebuffer);
-*/
-    Model myModel("res/obj/african_head/african_head.obj", framebuffer);
-    myModel.draw(RenderingMode::SOLID, transform, zBuffer, texture);
-    delete zBuffer;
-    
+    std::vector<glm::vec4> vertices(myModel.m_Vertices.size());
+    for (int i = 0; i < vertices.size(); i++)
+        vertices[i] = glm::vec4(myModel.m_Vertices[i], 1.0f);
+
+    Rasterizer myRasterizer(vertices, myModel.m_Faces, model, view, proj, viewport, framebuffer, texture, zBuffer, SOLID, PERSPECTIVE);
+    myRasterizer.setFilterMode(BILINEAR);
+    myRasterizer.setWrapModeU(CLAMP);
+    myRasterizer.setWrapModeV(CLAMP);
+    myRasterizer.setTextureCoords(myModel.m_Textures);
+    myRasterizer.process();
+    myRasterizer.draw();
     framebuffer.write_tga_file("framebuffer.tga");
+
+    delete zBuffer;
+
     return 0;
 }
