@@ -266,11 +266,18 @@ public:
 					triangle.color[j] = (*m_Colors)[(*m_Faces)[i].color[j]];
 			}
 
+            float w;
 			std::vector<Triangle> temp = clip(triangle);
             for (int j = 0; j < temp.size(); j++) {
                 for (auto& vertex : temp[j].position) {
-                    vertex /= vertex.w;
+
+                    w = vertex.w;
+
+                    vertex /= w;
                     vertex = (*m_Viewport) * vertex;
+
+                    // inserting the camera space -z value for perspective correct interpolation
+                    vertex.w = w;
                 }
                 m_Triangles.push_back(temp[j]);
             }

@@ -47,6 +47,10 @@ struct Face {
 	int color[3];
 	Face() {}
 
+	Face(int position0, int position1, int position2, int tex0, int tex1, int tex2) {
+		position[0] = position0, position[1] = position1, position[2] = position2,
+			texture[0] = tex0, texture[1] = tex1, texture[2] = tex2;
+	}
 };
 
 class Triangle {

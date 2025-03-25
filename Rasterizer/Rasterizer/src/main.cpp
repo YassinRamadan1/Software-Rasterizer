@@ -17,7 +17,8 @@ int main(int argc, char** argv) {
     TGAImage texture;
     
     const char* texLocation1 = "res/obj/african_head/african_head_diffuse.tga",
-        * texLocation2 = "res/obj/diablo3_pose/diablo3_pose_diffuse.tga";
+        * texLocation2 = "res/obj/diablo3_pose/diablo3_pose_diffuse.tga",
+    *texLocation3 = "res/checkerboard.tga";
     texture.read_tga_file(texLocation1);
     texture.flip_vertically();
     const char* location1 = "res/obj/african_head/african_head.obj",
@@ -32,7 +33,7 @@ int main(int argc, char** argv) {
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
-    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     glm::mat4 view = myCamera.getViewMatrix();
 
@@ -45,7 +46,29 @@ int main(int argc, char** argv) {
     for (int i = 0; i < vertices.size(); i++)
         vertices[i] = glm::vec4(myModel.m_Vertices[i], 1.0f);
 
-    Rasterizer myRasterizer(vertices, myModel.m_Faces, model, view, proj, viewport, framebuffer, texture, zBuffer, SOLID, PERSPECTIVE);
+    /*std::vector<glm::vec4> vertices{
+
+        glm::vec4(1.0f, 1.0f, -1.0f, 1.0f),
+        glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f),
+        glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
+        glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f)
+    };*/
+    
+    std::vector<glm::vec3> textureCoords{
+
+        glm::vec3(1.0, 1.0f, 0.0f),
+        glm::vec3(0.0, 1.0f, 0.0f),
+        glm::vec3(1.0, 0.0f, 0.0f),
+        glm::vec3(0.0, 0.0f, 0.0f)
+    };
+
+    std::vector<Face> faces{
+
+        Face(0, 1, 2, 0, 1, 2),
+        Face(1, 3, 2, 1, 3, 2)
+    };
+
+    Rasterizer myRasterizer(vertices, myModel.m_Faces, model, view, proj2, viewport, framebuffer, texture, zBuffer, SOLID, ORTHOGRAPHIC);
     myRasterizer.setFilterMode(BILINEAR);
     myRasterizer.setWrapModeU(CLAMP);
     myRasterizer.setWrapModeV(CLAMP);

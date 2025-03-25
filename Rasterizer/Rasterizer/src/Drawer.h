@@ -276,9 +276,11 @@ private:
 
         double area = utility::cross(v0, v1, v2);
         float mipmapLevel = 0;
-        glm::vec3 depth(1 / cameraSpaceZ(triangle.position[0].z), 1 / cameraSpaceZ(triangle.position[1].z), 1 / cameraSpaceZ(triangle.position[2].z)),
-            textureCoordU(triangle.textureCoord[0].s / cameraSpaceZ(triangle.position[0].z), triangle.textureCoord[1].s / cameraSpaceZ(triangle.position[1].z), triangle.textureCoord[2].s / cameraSpaceZ(triangle.position[2].z)),
-            textureCoordV(triangle.textureCoord[0].t / cameraSpaceZ(triangle.position[0].z), triangle.textureCoord[1].t / cameraSpaceZ(triangle.position[1].z), triangle.textureCoord[2].t / cameraSpaceZ(triangle.position[2].z));
+        glm::vec3 depth(1 / triangle.position[0].w, 1 / triangle.position[1].w, 1 / triangle.position[2].w),
+            textureCoordU(triangle.textureCoord[0].x / triangle.position[0].w,
+                triangle.textureCoord[1].x / triangle.position[1].w, triangle.textureCoord[2].x / triangle.position[2].w),
+            textureCoordV(triangle.textureCoord[0].y / triangle.position[0].w,
+                triangle.textureCoord[1].y / triangle.position[1].w, triangle.textureCoord[2].y / triangle.position[2].w);
 
         for (int y = ymin; y < ymax + 1; y++) {
             int index = y * m_Framebuffer->width();
@@ -286,11 +288,9 @@ private:
 
                 // get the barycentric coordinates alpha * P0 + beta * P1 + gamma * P2
                 // watch out for orientation!
-                glm::vec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
-                double alpha = current.x, beta = current.y, gamma = current.z;
-                
+                glm::vec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));                
 
-                if (alpha < 0.0f || beta < 0.0f || gamma < 0.0f)
+                if (current.x < 0.0f || current.y < 0.0f || current.z < 0.0f)
                     continue;
 
                 glm::vec3 right = barycentric(area, v0, v1, v2, glm::vec2(x + 1, y));
@@ -306,9 +306,14 @@ private:
                         z_interp_up = glm::dot(up, depth);
                     z_interp_right = 1 / z_interp_right, z_interp_up = 1 / z_interp_up;
 
-                    float u_interp = z_interp * glm::dot(current, textureCoordU), v_interp = z_interp * glm::dot(current, textureCoordV),
-                        u_interp_right = z_interp_right * glm::dot(right, textureCoordU), v_interp_right = z_interp_right * glm::dot(right, textureCoordV),
-                        u_interp_up = z_interp_up * glm::dot(up, textureCoordU), v_interp_up = z_interp_up * glm::dot(up, textureCoordV);
+                    float u_interp = z_interp * glm::dot(current, textureCoordU),
+                        v_interp = z_interp * glm::dot(current, textureCoordV),
+
+                        u_interp_right = z_interp_right * glm::dot(right, textureCoordU),
+                        v_interp_right = z_interp_right * glm::dot(right, textureCoordV),
+                        
+                        u_interp_up = z_interp_up * glm::dot(up, textureCoordU),
+                        v_interp_up = z_interp_up * glm::dot(up, textureCoordV);
                     
                     if(x != xmax && y != ymax)
                         mipmapLevel = calcMipmapLevel(u_interp, v_interp, u_interp_right, v_interp_right, u_interp_up, v_interp_up, m_TextureProcessor->getTextureWidth(0), m_TextureProcessor->getTextureHeight(0));
@@ -321,7 +326,6 @@ private:
 
                     // update the depth buffer
                     m_DepthBuffer[index + x] = z_interp;
-
                 }
             }
         }
@@ -339,8 +343,10 @@ private:
             ymax = std::min(m_Framebuffer->height() - 1.0f, std::round(std::max(v0.y, std::max(v1.y, v2.y))));
 
         double area = utility::cross(v0, v1, v2);
-
-        float z0 = triangle.position[0].z, z1 = triangle.position[1].z, z2 = triangle.position[2].z;
+        float mipmapLevel = 0;
+        glm::vec3 depth(triangle.position[0].z, triangle.position[1].z, triangle.position[2].z),
+            textureCoordU(triangle.textureCoord[0].x, triangle.textureCoord[1].x, triangle.textureCoord[2].x),
+            textureCoordV(triangle.textureCoord[0].y, triangle.textureCoord[1].y, triangle.textureCoord[2].y);
 
         // it is an instruction to OpenMP to parallelize the loop since it is perfectly parallel
 #pragma omp parallel for
@@ -350,26 +356,39 @@ private:
 
                 // get the barycentric coordinates alpha * P0 + beta * P1 + gamma * P2
                 // watch out for orientation!
-                glm::dvec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
-                double alpha = current.x, beta = current.y, gamma = current.z;
+                glm::vec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
 
-                if (alpha < 0.0f || beta < 0.0f || gamma < 0.0f)
+                if (current.x < 0.0f || current.y < 0.0f || current.z < 0.0f)
                     continue;
 
+                glm::vec3 right = barycentric(area, v0, v1, v2, glm::vec2(x + 1, y));
+                glm::vec3 up = barycentric(area, v0, v1, v2, glm::vec2(x, y + 1));
+
                 // early depth testing
-                float z_interp = alpha * z0 + beta * z1 + gamma * z2;
+                float z_interp = glm::dot(current, depth);
 
                 if (z_interp < m_DepthBuffer[index + x]) {
 
                     // update the depth buffer
                     m_DepthBuffer[index + x] = z_interp;
 
-                    float u_interp, v_interp;
-                    u_interp = alpha * triangle.textureCoord[0].s + beta * triangle.textureCoord[1].s + gamma * triangle.textureCoord[2].s;
-                    v_interp = alpha * triangle.textureCoord[0].t + beta * triangle.textureCoord[1].t + gamma * triangle.textureCoord[2].t;
-                    
+                    float z_interp_right = glm::dot(right, depth),
+                        z_interp_up = glm::dot(up, depth);
+
+                    float u_interp = glm::dot(current, textureCoordU),
+                        v_interp = glm::dot(current, textureCoordV),
+
+                        u_interp_right = glm::dot(right, textureCoordU),
+                        v_interp_right = glm::dot(right, textureCoordV),
+
+                        u_interp_up = glm::dot(up, textureCoordU),
+                        v_interp_up = glm::dot(up, textureCoordV);
+
+                    if (x != xmax && y != ymax)
+                        mipmapLevel = calcMipmapLevel(u_interp, v_interp, u_interp_right, v_interp_right, u_interp_up, v_interp_up, m_TextureProcessor->getTextureWidth(0), m_TextureProcessor->getTextureHeight(0));
+
                     // set the pixel color
-                    m_Framebuffer->set(x, y, m_TextureProcessor->getTexel(u_interp, v_interp, 0));
+                    m_Framebuffer->set(x, y, m_TextureProcessor->getTexel(u_interp, v_interp, mipmapLevel));
                 }
             }
         }

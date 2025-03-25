@@ -149,9 +149,10 @@ public:
 			if (width == 1 && height == 1)
 				break;
 		}
-		for (int i = 0; i < m_Texture.size(); i++) {
+
+/*		for (int i = 0; i < m_Texture.size(); i++) {
 			m_Texture[i].write_tga_file("texturelevel" + std::to_string(i) + ".tga");
-		}
+		}*/
 	}
 
 private:
