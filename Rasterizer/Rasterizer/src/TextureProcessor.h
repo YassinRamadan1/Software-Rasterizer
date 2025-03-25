@@ -20,25 +20,25 @@ public:
 		
 		// wrapping method
 		switch (m_WrapModeU) {
-		case REPEAT:
+		case WrapMode::REPEAT:
 			u = Repeat(u);
 			break;
-		case MIRROR:
+		case WrapMode::MIRROR:
 			u = mirroredRepeat(u);
 			break;
-		case CLAMP:
+		case WrapMode::CLAMP:
 			u = std::max(0.0f, std::min(1.0f, u));
 			break;
 		}
 
 		switch (m_WrapModeV) {
-		case REPEAT:
+		case WrapMode::REPEAT:
 			v = Repeat(v);
 			break;
-		case MIRROR:
+		case WrapMode::MIRROR:
 			v = mirroredRepeat(v);
 			break;
-		case CLAMP:
+		case WrapMode::CLAMP:
 			v = std::max(0.0f, std::min(1.0f, v));
 			break;
 		}
@@ -46,11 +46,11 @@ public:
 		level = std::clamp(level, 0.0f, float(m_Texture.size() - 1));
 		// filtering method
 		switch (m_FilterMode) {
-			case NEAREST:
+		case FilterMode::NEAREST:
 				return nearestFilter(u, v, int(level + 0.5));
-			case BILINEAR:
+		case FilterMode::BILINEAR:
 				return bilinearFilter(u, v, int(level + 0.5));
-			case TRILINEAR:
+		case FilterMode::TRILINEAR:
 				return trilinearFilter(u, v, level);
 		}
 	}

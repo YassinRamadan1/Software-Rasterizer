@@ -62,27 +62,27 @@ public:
     void draw() {
 
         switch (m_RenderMode) {
-        case WIREFRAME:
+        case RenderMode::WIREFRAME:
             //drawWireframe();
             break;
-        case SOLID:
+        case RenderMode::SOLID:
             switch (m_ProjectionMode) {
-                case PERSPECTIVE:
+            case ProjectionMode::PERSPECTIVE:
                     switch (m_AttributeMode) {
-                    case COLOR:
+                    case AttributeMode::COLOR:
                         drawSolidPerspectiveColor();
                         break;
-                    case TEXTURE:
+                    case AttributeMode::TEXTURE:
                         drawSolidPerspectiveTexture();
                         break;
                     }
                     break;
-                case ORTHOGRAPHIC:
+            case ProjectionMode::ORTHOGRAPHIC:
                     switch (m_AttributeMode) {
-                        case COLOR:
+                    case AttributeMode::COLOR:
                             drawSolidOrthoColor();
                             break;
-                        case TEXTURE:
+                    case AttributeMode::TEXTURE:
                             drawSolidOrthoTexture();
                             break;
                     }
@@ -118,15 +118,6 @@ private:
         }
     }
 
-    float cameraSpaceZ(float z) {
-        float Zndc = 2 * (z - m_Viewport_Near) / (m_Viewport_Far - m_Viewport_Near) - 1;
-		return (2 * m_Far * m_Near) / (m_Far + m_Near - Zndc * (m_Far - m_Near));
-	}
-
-    float viewportSpaceZ(float z) {
-        return (m_Viewport_Near + (m_Viewport_Far - m_Viewport_Near) * (z - m_Near) / (m_Far - m_Near));
-    }
-
     glm::dvec3 barycentric(double& area, glm::vec2& v0, glm::vec2& v1, glm::vec2& v2, glm::vec2 p) {
 		double alpha = utility::cross(v1, v2, p) / area;
 		double beta = utility::cross(v2, v0, p) / area;
@@ -155,53 +146,42 @@ private:
 
         double area = utility::cross(v0, v1, v2);
 
-        
-        float z0 = cameraSpaceZ(triangle.position[0].z),
-            z1 = cameraSpaceZ(triangle.position[1].z),
-            z2 = cameraSpaceZ(triangle.position[2].z);
+        utility::Color c;
 
-        // it is an instruction to OpenMP to parallelize the loop since it is perfectly parallel
-#pragma omp parallel for
+        glm::vec3 depth(1 / triangle.position[0].w, 1 / triangle.position[1].w, 1 / triangle.position[2].w),
+            colorRed(triangle.color[0].r / triangle.position[0].w,
+                triangle.color[1].r / triangle.position[1].w, triangle.color[2].r / triangle.position[2].w),
+            colorGreen(triangle.color[0].g / triangle.position[0].w,
+                triangle.color[1].g / triangle.position[1].w, triangle.color[2].g / triangle.position[2].w),
+            colorBlue(triangle.color[0].b / triangle.position[0].w,
+                triangle.color[1].b / triangle.position[1].w, triangle.color[2].b / triangle.position[2].w);
+
         for (int y = ymin; y < ymax + 1; y++) {
             int index = y * m_Framebuffer->width();
             for (int x = xmin; x < xmax + 1; x++) {
 
                 // get the barycentric coordinates alpha * P0 + beta * P1 + gamma * P2
                 // watch out for orientation!
-                glm::dvec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
-                double alpha = current.x, beta = current.y, gamma = current.z;
+                glm::vec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
 
-                if (alpha < 0.0f || beta < 0.0f || gamma < 0.0f)
+                if (current.x < 0.0f || current.y < 0.0f || current.z < 0.0f)
                     continue;
 
                 // early depth testing
-                float z_interp = alpha * 1 / z0 + beta * 1 / z1 + gamma * 1 / z2;
+                float z_interp = glm::dot(current, depth);
                 z_interp = 1 / z_interp;
 
                 if (z_interp < m_DepthBuffer[index + x]) {
 
-                    float r_interp, g_interp, b_interp;
-                    unsigned char r = 0, g = 0, b = 0;
-                    r_interp = alpha * triangle.color[0].r / z0 + beta * triangle.color[1].r / z1 + gamma * triangle.color[2].r / z2;
-                    r_interp *= z_interp;
-                    g_interp = alpha * triangle.color[0].g / z0 + beta * triangle.color[1].g / z1 + gamma * triangle.color[2].g / z2;
-                    g_interp *= z_interp;
-                    b_interp = alpha * triangle.color[0].b / z0 + beta * triangle.color[1].b / z1 + gamma * triangle.color[2].b / z2;
-                    b_interp *= z_interp;
-                    
-                    // clamp the color values
-                    r = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(r_interp)), 0, 255));
-                    g = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(g_interp)), 0, 255));
-                    b = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(b_interp)), 0, 255));
-
-                    // map back to viewport space
-                    z_interp = viewportSpaceZ(z_interp);
-
-                    // update the depth buffer
-                    m_DepthBuffer[index + x] = z_interp;
+                    c.set(glm::dot(current, colorRed) * z_interp, glm::dot(current, colorGreen) * z_interp, glm::dot(current, colorBlue) * z_interp);
 
                     // set the pixel color
-                    m_Framebuffer->set(x, y, { b, g, r, 255 });
+                    m_Framebuffer->set(x, y, c.toTGAColor());
+
+                    // map back to viewport space
+
+                    // update the depth buffer
+                   m_DepthBuffer[index + x] = z_interp;
                 }
             }
         }
@@ -220,44 +200,35 @@ private:
 
         double area = utility::cross(v0, v1, v2);
 
+        utility::Color c;
+        glm::vec3 depth(triangle.position[0].w, triangle.position[1].w, triangle.position[2].w),
+            colorRed(triangle.color[0].r, triangle.color[1].r, triangle.color[2].r),
+            colorGreen(triangle.color[0].g, triangle.color[1].g, triangle.color[2].g),
+            colorBlue(triangle.color[0].b, triangle.color[1].b, triangle.color[2].b);
 
-        float z0 = triangle.position[0].z, z1 = triangle.position[1].z, z2 = triangle.position[2].z;
-
-        // it is an instruction to OpenMP to parallelize the loop since it is perfectly parallel
-#pragma omp parallel for
         for (int y = ymin; y < ymax + 1; y++) {
             int index = y * m_Framebuffer->width();
             for (int x = xmin; x < xmax + 1; x++) {
 
                 // get the barycentric coordinates alpha * P0 + beta * P1 + gamma * P2
                 // watch out for orientation!
-                glm::dvec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
-                double alpha = current.x, beta = current.y, gamma = current.z;
+                glm::vec3 current = barycentric(area, v0, v1, v2, glm::vec2(x, y));
 
-                if (alpha < 0.0f || beta < 0.0f || gamma < 0.0f)
+                if (current.x < 0.0f || current.y < 0.0f || current.z < 0.0f)
                     continue;
 
                 // early depth testing
-                float z_interp = alpha * z0 + beta * z1 + gamma * z2;
-
+                float z_interp = glm::dot(current, depth);
+                
                 if (z_interp < m_DepthBuffer[index + x]) {
 
                     // update the depth buffer
                     m_DepthBuffer[index + x] = z_interp;
 
-                    float r_interp, g_interp, b_interp;
-                    unsigned char r = 0, g = 0, b = 0;
-                    r_interp = alpha * triangle.color[0].r + beta * triangle.color[1].r + gamma * triangle.color[2].r;
-                    g_interp = alpha * triangle.color[0].g + beta * triangle.color[1].g + gamma * triangle.color[2].g;
-                    b_interp = alpha * triangle.color[0].b + beta * triangle.color[1].b + gamma * triangle.color[2].b;
-
-                    // clamp the color values
-                    r = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(r_interp)), 0, 255));
-                    g = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(g_interp)), 0, 255));
-                    b = static_cast<unsigned char>(std::clamp(static_cast<int>(std::round(b_interp)), 0, 255));
+                    c.set(glm::dot(current, colorRed), glm::dot(current, colorGreen), glm::dot(current, colorBlue));
 
                     // set the pixel color
-                    m_Framebuffer->set(x, y, { b, g, r, 255 });
+                    m_Framebuffer->set(x, y, c.toTGAColor());
                 }
             }
         }
@@ -306,14 +277,14 @@ private:
                         z_interp_up = glm::dot(up, depth);
                     z_interp_right = 1 / z_interp_right, z_interp_up = 1 / z_interp_up;
 
-                    float u_interp = z_interp * glm::dot(current, textureCoordU),
-                        v_interp = z_interp * glm::dot(current, textureCoordV),
+                    float u_interp = glm::dot(current, textureCoordU) * z_interp,
+                        v_interp = glm::dot(current, textureCoordV) * z_interp,
 
-                        u_interp_right = z_interp_right * glm::dot(right, textureCoordU),
-                        v_interp_right = z_interp_right * glm::dot(right, textureCoordV),
+                        u_interp_right =glm::dot(right, textureCoordU) * z_interp_right,
+                        v_interp_right = glm::dot(right, textureCoordV) * z_interp_right,
                         
-                        u_interp_up = z_interp_up * glm::dot(up, textureCoordU),
-                        v_interp_up = z_interp_up * glm::dot(up, textureCoordV);
+                        u_interp_up = glm::dot(up, textureCoordU) * z_interp_up,
+                        v_interp_up = glm::dot(up, textureCoordV) * z_interp_up;
                     
                     if(x != xmax && y != ymax)
                         mipmapLevel = calcMipmapLevel(u_interp, v_interp, u_interp_right, v_interp_right, u_interp_up, v_interp_up, m_TextureProcessor->getTextureWidth(0), m_TextureProcessor->getTextureHeight(0));
@@ -322,8 +293,6 @@ private:
                     m_Framebuffer->set(x, y, m_TextureProcessor->getTexel(u_interp, v_interp, mipmapLevel));
 
                     // map back to viewport space
-                    z_interp = viewportSpaceZ(z_interp);
-
                     // update the depth buffer
                     m_DepthBuffer[index + x] = z_interp;
                 }

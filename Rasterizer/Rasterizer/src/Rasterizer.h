@@ -16,7 +16,7 @@ private:
 
 	std::vector<glm::vec4> m_Vertices;
 	std::vector<glm::vec3> m_TextureCoords;
-	std::vector<glm::vec4> m_Colors;
+	std::vector<utility::Color> m_Colors;
 	std::vector<Face> m_Faces;
 	glm::mat4 m_Model, m_View, m_Projection, m_Viewport;
 	RenderMode m_RenderMode;
@@ -30,9 +30,9 @@ private:
 public:
 
 	Rasterizer(std::vector<glm::vec4> vertices, std::vector<Face> faces, glm::mat4 model, glm::mat4 view, glm::mat4 projection,
-		glm::mat4 viewport, TGAImage& framebuffer, TGAImage& texture, float* depthBuffer, RenderMode renderMode = SOLID,
-		ProjectionMode projectionMode = PERSPECTIVE, AttributeMode attributeMode = TEXTURE, WrapMode wrapModeU = REPEAT,
-		WrapMode wrapModeV = REPEAT, FilterMode filterMode = NEAREST, float near = 1.0f, float far = 100.0f, float viewportNear = 0.0f,
+		glm::mat4 viewport, TGAImage& framebuffer, TGAImage& texture, float* depthBuffer, RenderMode renderMode = RenderMode::SOLID,
+		ProjectionMode projectionMode = ProjectionMode::PERSPECTIVE, AttributeMode attributeMode = AttributeMode::TEXTURE, WrapMode wrapModeU = WrapMode::REPEAT,
+		WrapMode wrapModeV = WrapMode::REPEAT, FilterMode filterMode = FilterMode::NEAREST, float near = 1.0f, float far = 100.0f, float viewportNear = 0.0f,
 		float viewportFar = 1.0f) 
 		: m_Vertices(vertices), m_Faces(faces), m_Model(model), m_View(view), m_Projection(projection),
 		m_Viewport(viewport), m_RenderMode(renderMode), m_ProjectionMode(projectionMode), m_AttributeMode(attributeMode),
@@ -56,10 +56,10 @@ public:
 
 		switch (m_AttributeMode) {
 
-		case COLOR:
+		case AttributeMode::COLOR:
 			m_PrimitiveAssembler.setColors(m_Colors);
 			break;
-		case TEXTURE:
+		case AttributeMode::TEXTURE:
 			m_PrimitiveAssembler.setTextureCoordinates(m_TextureCoords);
 			m_TextureProcessor.setTexture(*m_Texture);
 			m_TextureProcessor.generateMipmaps();
@@ -101,7 +101,7 @@ public:
 		m_TextureCoords = textureCoords;
 	}
 
-	void setColors(std::vector<glm::vec4> colors) {
+	void setColors(std::vector<utility::Color> colors) {
 		m_Colors = colors;
 	}
 

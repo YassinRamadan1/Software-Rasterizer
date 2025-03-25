@@ -13,28 +13,28 @@
 
 #include "tgaimage.h"
 
-enum RenderMode {
+enum class RenderMode {
 	WIREFRAME,
 	SOLID
 };
 
-enum ProjectionMode {
+enum class ProjectionMode {
 	PERSPECTIVE,
 	ORTHOGRAPHIC
 };
 
-enum AttributeMode {
+enum class AttributeMode {
 	COLOR,
 	TEXTURE
 };
 
-enum WrapMode {
+enum class WrapMode {
 	REPEAT,
 	MIRROR,
 	CLAMP
 };
 
-enum FilterMode {
+enum class FilterMode {
 	NEAREST,
 	BILINEAR,
 	TRILINEAR
@@ -51,17 +51,12 @@ struct Face {
 		position[0] = position0, position[1] = position1, position[2] = position2,
 			texture[0] = tex0, texture[1] = tex1, texture[2] = tex2;
 	}
-};
 
-class Triangle {
-public:
-
-	glm::vec4 position[3];
-	glm::vec3 textureCoord[3];
-	glm::vec4 color[3];
-	glm::vec3 normal;
-
-	Triangle() {}
+	Face(int position0, int position1, int position2, int c0, int c1, int c2, int tex0, int tex1, int tex2) {
+		position[0] = position0, position[1] = position1, position[2] = position2,
+			color[0] = c0, color[1] = c1, color[2] = c2,
+			texture[0] = tex0, texture[1] = tex1, texture[2] = tex2;
+	}
 };
 
 namespace utility {
@@ -117,11 +112,17 @@ namespace utility {
 			a = tga[3] / 255.0f;
 		}
 		
-		void init(float v) {
-			b = g = r = v, a = 1.0f;
+		void init(float v, float alpha = 1.0f) {
+
+			b = g = r = v, a = alpha;
 		}
 
+		void set(float r, float g, float b, float a = 1.0f) {
+
+			this->r = r, this->g = g, this->b = b, this->a = a;
+		}
 		Color toColor(TGAColor tga) {
+
 			float b = tga[0] / 255.0f;
 			float g = tga[1] / 255.0f;
 			float r = tga[2] / 255.0f;
@@ -134,12 +135,18 @@ namespace utility {
 			tga[0] = static_cast<unsigned char>(std::clamp(b * 255.0f, 0.0f, 255.0f));
 			tga[1] = static_cast<unsigned char>(std::clamp(g * 255.0f, 0.0f, 255.0f));
 			tga[2] = static_cast<unsigned char>(std::clamp(r * 255.0f, 0.0f, 255.0f));
-			tga[3] = static_cast<unsigned char>(std::clamp(a * 255.0f, 0.0f, 255.0f));
+			
+			//tga[3] = static_cast<unsigned char>(std::clamp(a * 255.0f, 0.0f, 255.0f));
+			tga[3] = 255;
 			return tga;
 		}
 
 		Color operator+(const Color& other) const {
 			return Color(r + other.r, g + other.g, b + other.b, a + other.a);
+		}
+
+		Color operator-(const Color& other) const {
+			return Color(r - other.r, g - other.g, b - other.b, a - other.a);
 		}
 
 		Color operator*(float scalar) const {
@@ -234,3 +241,15 @@ namespace utility {
 	};
 
 }
+
+
+class Triangle {
+public:
+
+	glm::vec4 position[3];
+	glm::vec3 textureCoord[3];
+	utility::Color color[3];
+	glm::vec3 normal;
+
+	Triangle() {}
+};

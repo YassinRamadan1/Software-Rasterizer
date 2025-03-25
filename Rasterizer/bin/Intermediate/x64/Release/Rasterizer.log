@@ -85,5 +85,10 @@ C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C4244:         [
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C4244:             _Ty=float
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C4244:         ]
-C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(56,1): warning C4715: 'TextureProcessor::getTexel': not all control paths return a value
-  Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\x64\Debug\Rasterizer.exe
+  tgaimage.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(56): warning C4715: 'TextureProcessor::getTexel': not all control paths return a value
+  All 961 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\x64\Release\Rasterizer.exe

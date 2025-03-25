@@ -2,16 +2,10 @@
 #include "Model.h"
 #include "Rasterizer.h"
 
-constexpr TGAColor white = { 255, 255, 255, 255 }; // attention, BGRA order
-constexpr TGAColor green = { 0, 255,   0, 255 };
-constexpr TGAColor red = { 0,   0, 255, 255 };
-constexpr TGAColor blue = { 255, 128,  64, 255 };
-constexpr TGAColor yellow = { 0, 200, 255, 255 };
-
 int main(int argc, char** argv) {
     
-    constexpr int width = 800;
-    constexpr int height = 800;
+    constexpr int width = 1280;
+    constexpr int height = 720;
 
     TGAImage framebuffer(width, height, TGAImage::RGB);
     TGAImage texture;
@@ -25,7 +19,7 @@ int main(int argc, char** argv) {
         *location2 = "res/obj/diablo3_pose/diablo3_pose.obj";
     Model myModel(location1);
 
-    float* zBuffer = new float [800 * 800];
+    float* zBuffer = new float [width * height];
     for(int i = 0; i < width * height; i++)
 		zBuffer[i] = std::numeric_limits<float>::max();
 
@@ -37,42 +31,54 @@ int main(int argc, char** argv) {
 
     glm::mat4 view = myCamera.getViewMatrix();
 
-    glm::mat4 proj = utility::perspectiveProjection(glm::radians(myCamera.m_Zoom), 1.0f, 1.0f, 100.0f);
-    glm::mat4 proj2 = utility::orthographicProjection(glm::radians(2 * myCamera.m_Zoom), 1.0f, 1.0f, 100.0f);
+    glm::mat4 proj = utility::perspectiveProjection(glm::radians(myCamera.m_Zoom), width * 1.0f / height, 1.0f, 100.0f);
+    glm::mat4 proj2 = utility::orthographicProjection(glm::radians(2 * myCamera.m_Zoom), width * 1.0f / height, 1.0f, 100.0f);
 
     glm::mat4  viewport = utility::viewport(0, 0, width, height);
-
+    
+    /*
     std::vector<glm::vec4> vertices(myModel.m_Vertices.size());
     for (int i = 0; i < vertices.size(); i++)
         vertices[i] = glm::vec4(myModel.m_Vertices[i], 1.0f);
+    */
 
-    /*std::vector<glm::vec4> vertices{
+    std::vector<glm::vec4> vertices{
 
-        glm::vec4(1.0f, 1.0f, -1.0f, 1.0f),
-        glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f),
+        glm::vec4(1.0f, 1.0f, -7.0f, 1.0f),
+        glm::vec4(-1.0f, 1.0f, -7.0f, 1.0f),
         glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
         glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f)
-    };*/
+    };
     
     std::vector<glm::vec3> textureCoords{
 
-        glm::vec3(1.0, 1.0f, 0.0f),
-        glm::vec3(0.0, 1.0f, 0.0f),
-        glm::vec3(1.0, 0.0f, 0.0f),
-        glm::vec3(0.0, 0.0f, 0.0f)
+        glm::vec3(1.0f, 1.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f)
+    };
+
+    std::vector<utility::Color> colors{
+
+        utility::Color(1.0, 0.0f, 0.0f),
+        utility::Color(0.0f, 1.0f, 0.0f),
+        utility::Color(0.0f, 0.0f, 1.0f),
+        utility::Color(1.0f, 1.0f, 0.0f)
     };
 
     std::vector<Face> faces{
 
-        Face(0, 1, 2, 0, 1, 2),
-        Face(1, 3, 2, 1, 3, 2)
+        Face(0, 1, 2, 0, 1, 2, 0, 1, 2),
+        Face(1, 3, 2, 1, 3, 2, 1, 3, 2)
     };
 
-    Rasterizer myRasterizer(vertices, myModel.m_Faces, model, view, proj2, viewport, framebuffer, texture, zBuffer, SOLID, ORTHOGRAPHIC);
-    myRasterizer.setFilterMode(BILINEAR);
-    myRasterizer.setWrapModeU(CLAMP);
-    myRasterizer.setWrapModeV(CLAMP);
-    myRasterizer.setTextureCoords(myModel.m_Textures);
+    Rasterizer myRasterizer(vertices, faces, model, view, proj, viewport, framebuffer, texture, zBuffer, RenderMode::SOLID, ProjectionMode::PERSPECTIVE);
+    myRasterizer.setFilterMode(FilterMode::BILINEAR);
+    myRasterizer.setWrapModeU(WrapMode::CLAMP);
+    myRasterizer.setWrapModeV(WrapMode::CLAMP);
+//    myRasterizer.setTextureCoords(myModel.m_Textures);
+    myRasterizer.setColors(colors);
+    myRasterizer.setAttributeMode(AttributeMode::COLOR);
     myRasterizer.process();
     myRasterizer.draw();
     framebuffer.write_tga_file("framebuffer.tga");

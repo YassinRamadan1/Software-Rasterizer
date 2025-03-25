@@ -5,6 +5,11 @@ C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\utility.h(64,24): warning C
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(163,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(163,25): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(190,17): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(192,21): warning C4018: '>=': signed/unsigned mismatch
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\PrimitiveAssembler.h(225,27): warning C4018: '<': signed/unsigned mismatch
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\PrimitiveAssembler.h(227,31): warning C4018: '<': signed/unsigned mismatch
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\PrimitiveAssembler.h(258,21): warning C4018: '<': signed/unsigned mismatch
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\PrimitiveAssembler.h(271,31): warning C4018: '<': signed/unsigned mismatch
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(142,18): warning C4244: 'initializing': conversion from 'const _Ty' to 'int', possible loss of data
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(142,18): warning C4244:         with
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(142,18): warning C4244:         [
@@ -85,5 +90,10 @@ C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C4244:         [
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C4244:             _Ty=float
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.h(312,18): warning C4244:         ]
-C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(56,1): warning C4715: 'TextureProcessor::getTexel': not all control paths return a value
-  Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\x64\Debug\Rasterizer.exe
+  tgaimage.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.h(56): warning C4715: 'TextureProcessor::getTexel': not all control paths return a value
+  All 964 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Rasterizer.vcxproj -> C:\dev\Software-Rasterizer\Rasterizer\bin\EXE\Win32\Release\Rasterizer.exe

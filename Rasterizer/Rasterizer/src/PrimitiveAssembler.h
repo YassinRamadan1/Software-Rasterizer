@@ -10,7 +10,7 @@ private:
 
     std::vector<glm::vec4>* m_Vertices;
     std::vector<glm::vec3>* m_TextureCoordinates;
-    std::vector<glm::vec4>* m_Colors;
+    std::vector<utility::Color>* m_Colors;
     std::vector<Face>* m_Faces;
     glm::mat4* m_Viewport;
 
@@ -54,7 +54,7 @@ private:
             float t1 = (-triangle.position[0].z + triangle.position[0].w) / (triangle.position[1].z - triangle.position[1].w - triangle.position[0].z + triangle.position[0].w);
             glm::vec4 position1 = triangle.position[0] + t1 * (triangle.position[1] - triangle.position[0]);
             glm::vec3 textureCoord1 = triangle.textureCoord[0] + t1 * (triangle.textureCoord[1] - triangle.textureCoord[0]);
-            glm::vec4 color1 = triangle.color[0] + t1 * (triangle.color[1] - triangle.color[0]);
+            utility::Color color1 = triangle.color[0] + (triangle.color[1] - triangle.color[0]) * t1;
             Triangle triangle1 = triangle;
             triangle1.position[0] = position1;
             triangle1.textureCoord[0] = textureCoord1;
@@ -65,7 +65,7 @@ private:
             float t2 = (-triangle.position[0].z + triangle.position[0].w) / (triangle.position[2].z - triangle.position[2].w - triangle.position[0].z + triangle.position[0].w);
             glm::vec4 position2 = triangle.position[0] + t2 * (triangle.position[2] - triangle.position[0]);
             glm::vec3 textureCoord2 = triangle.textureCoord[0] + t2 * (triangle.textureCoord[2] - triangle.textureCoord[0]);
-            glm::vec4 color2 = triangle.color[0] + t2 * (triangle.color[2] - triangle.color[0]);
+            utility::Color color2 = triangle.color[0] + (triangle.color[2] - triangle.color[0]) * t2;
             Triangle triangle2 = triangle1;
             triangle2.position[1] = position2;
             triangle2.textureCoord[1] = textureCoord2;
@@ -96,7 +96,7 @@ private:
         float t1 = (-triangle.position[1].z + triangle.position[1].w) / (triangle.position[0].z - triangle.position[0].w - triangle.position[1].z + triangle.position[1].w);
         glm::vec4 position1 = triangle.position[1] + t1 * (triangle.position[0] - triangle.position[1]);
         glm::vec3 textureCoord1 = triangle.textureCoord[1] + t1 * (triangle.textureCoord[0] - triangle.textureCoord[1]);
-        glm::vec4 color1 = triangle.color[1] + t1 * (triangle.color[0] - triangle.color[1]);
+        utility::Color color1 = triangle.color[1] + (triangle.color[0] - triangle.color[1]) * t1;
         Triangle triangle1 = triangle;
         triangle1.position[1] = position1;
         triangle1.textureCoord[1] = textureCoord1;
@@ -106,7 +106,7 @@ private:
         float t2 = (-triangle.position[2].z + triangle.position[2].w) / (triangle.position[0].z - triangle.position[0].w - triangle.position[2].z + triangle.position[2].w);
         glm::vec4 position2 = triangle.position[2] + t2 * (triangle.position[0] - triangle.position[2]);
         glm::vec3 textureCoord2 = triangle.textureCoord[2] + t2 * (triangle.textureCoord[0] - triangle.textureCoord[2]);
-        glm::vec4 color2 = triangle.color[2] + t2 * (triangle.color[0] - triangle.color[2]);
+        utility::Color color2 = triangle.color[2] + (triangle.color[0] - triangle.color[2]) * t2;
         triangle1.position[2] = position2;
         triangle1.textureCoord[2] = textureCoord2;
         triangle1.color[2] = color2;
@@ -157,7 +157,7 @@ private:
             float t1 = -(triangle.position[0].z + triangle.position[0].w) / (triangle.position[1].z + triangle.position[1].w - triangle.position[0].z - triangle.position[0].w);
             glm::vec4 position1 = triangle.position[0] + t1 * (triangle.position[1] - triangle.position[0]);
             glm::vec3 textureCoord1 = triangle.textureCoord[0] + t1 * (triangle.textureCoord[1] - triangle.textureCoord[0]);
-            glm::vec4 color1 = triangle.color[0] + t1 * (triangle.color[1] - triangle.color[0]);
+            utility::Color color1 = triangle.color[0] + (triangle.color[1] - triangle.color[0]) * t1;
             Triangle triangle1 = triangle; // triangle1 is P0, P1, P2
             triangle1.position[0] = position1;
             triangle1.textureCoord[0] = textureCoord1;
@@ -168,7 +168,7 @@ private:
             float t2 = -(triangle.position[0].z + triangle.position[0].w) / (triangle.position[2].z + triangle.position[2].w - triangle.position[0].z - triangle.position[0].w);
             glm::vec4 position2 = triangle.position[0] + t2 * (triangle.position[2] - triangle.position[0]);
             glm::vec3 textureCoord2 = triangle.textureCoord[0] + t2 * (triangle.textureCoord[2] - triangle.textureCoord[0]);
-            glm::vec4 color2 = triangle.color[0] + t2 * (triangle.color[2] - triangle.color[0]);
+            utility::Color color2 = triangle.color[0] + (triangle.color[2] - triangle.color[0]) * t2;
             Triangle triangle2 = triangle1; // triangle2 is newP0 along edge(P0, P1), P1, P2
             triangle2.position[1] = position2;
             triangle2.textureCoord[1] = textureCoord2;
@@ -199,7 +199,7 @@ private:
         float t1 = -(triangle.position[1].z + triangle.position[1].w) / (triangle.position[0].z + triangle.position[0].w - triangle.position[1].z - triangle.position[1].w);
         glm::vec4 position1 = triangle.position[1] + t1 * (triangle.position[0] - triangle.position[1]);
         glm::vec3 textureCoord1 = triangle.textureCoord[1] + t1 * (triangle.textureCoord[0] - triangle.textureCoord[1]);
-        glm::vec4 color1 = triangle.color[1] + t1 * (triangle.color[0] - triangle.color[1]);
+        utility::Color color1 = triangle.color[1] + (triangle.color[0] - triangle.color[1]) * t1;
         Triangle triangle1 = triangle; // triangle1 P0, P1, P2
         triangle1.position[1] = position1;
         triangle1.textureCoord[1] = textureCoord1;
@@ -209,7 +209,7 @@ private:
         float t2 = -(triangle.position[2].z + triangle.position[2].w) / (triangle.position[0].z + triangle.position[0].w - triangle.position[2].z - triangle.position[2].w);
         glm::vec4 position2 = triangle.position[2] + t2 * (triangle.position[0] - triangle.position[2]);
         glm::vec3 textureCoord2 = triangle.textureCoord[2] + t2 * (triangle.textureCoord[0] - triangle.textureCoord[2]);
-        glm::vec4 color2 = triangle.color[2] + t2 * (triangle.color[0] - triangle.color[2]);
+        utility::Color color2 = triangle.color[2] + (triangle.color[0] - triangle.color[2]) * t2;
         triangle1.position[2] = position2;
         triangle1.textureCoord[2] = textureCoord2;
         triangle1.color[2] = color2; // triangle1 P0, newP1 along edge(P1, P0), newP2 along edge(P2, P0)
@@ -239,14 +239,14 @@ public:
         : m_Vertices(&vertices), m_TextureCoordinates(&textures), m_Faces(&faces) {}
 
     PrimitiveAssembler(std::vector<glm::vec4>& vertices, std::vector<glm::vec3>& textures,
-        std::vector<glm::vec4>& colors, std::vector<Face>& faces)
+        std::vector<utility::Color>& colors, std::vector<Face>& faces)
         : m_Vertices(&vertices), m_TextureCoordinates(&textures), m_Colors(&colors), m_Faces(&faces) {}
 
     void setVertices(std::vector<glm::vec4>& vertices) { m_Vertices = &vertices; }
 
     void setTextureCoordinates(std::vector<glm::vec3>& textures) { m_TextureCoordinates = &textures; }
     
-    void setColors(std::vector<glm::vec4>& colors) { m_Colors = &colors; }
+    void setColors(std::vector<utility::Color>& colors) { m_Colors = &colors; }
     
     void setFaces(std::vector<Face>& faces) { m_Faces = &faces; }
 
