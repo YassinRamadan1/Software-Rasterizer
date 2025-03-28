@@ -27,7 +27,7 @@ public:
 			u = mirroredRepeat(u);
 			break;
 		case WrapMode::CLAMP:
-			u = std::max(0.0f, std::min(1.0f, u));
+			u = clamp(u);
 			break;
 		}
 
@@ -42,8 +42,10 @@ public:
 			v = std::max(0.0f, std::min(1.0f, v));
 			break;
 		}
+
 		// clamping the level to the valid range
 		level = std::clamp(level, 0.0f, float(m_Texture.size() - 1));
+
 		// filtering method
 		switch (m_FilterMode) {
 		case FilterMode::NEAREST:
@@ -54,7 +56,6 @@ public:
 				return trilinearFilter(u, v, level);
 		}
 	}
-
 
 	void generateMipmaps() {
 
@@ -159,69 +160,71 @@ private:
 
 	TGAColor bilinearFilter(float u, float v, int level) {
 
-		u = u * (m_Texture[level].width() - 1), v = v * (m_Texture[level].height() - 1);
-		int x1 = floor(u), y1 = floor(v);
+		u = u * (m_Texture[level].width() - 1) - 0.5, v = v * (m_Texture[level].height() - 1) - 0.5;
+
+		int x1 = u, y1 = v;
 		float fractionU = u - x1;
 		float fractionV = v - y1;
 
 		// lerping down in the U direction 
-		utility::Color color1 = color1.toColor(m_Texture[level].get(x1 + 1, y1)), color2 = color2.toColor(m_Texture[level].get(x1, y1)),
-			color3;
+		utility::Color color1(m_Texture[level].get(x1, y1)),
+			color2(m_Texture[level].get(x1 + 1, y1)),
+			color3(m_Texture[level].get(x1, y1 + 1)),
+			color4(m_Texture[level].get(x1 + 1, y1 + 1));
 
-		// color3 is the result of lerping down in the U direction
-		color3 = color1 * fractionU + color2 * (1 - fractionU);
+		// color2 is the result of lerping down in the U direction
+		color2 = color1 * (1 - fractionU) + color2 * fractionU;
 
-		// lerping up in the U direction 
-		color1 = color1.toColor(m_Texture[level].get(x1 + 1, y1 + 1));
-		color2 = color2.toColor(m_Texture[level].get(x1, y1 + 1));
-
-		// color2 is the result of lerping up in the U direction
-		color2 = color1 * fractionU + color2 * (1 - fractionU);
+		// color4 is the result of lerping up in the U direction
+		color4 = color3 * (1 - fractionU) + color4 * fractionU;
 
 		// lerping in the V direction
-		color1 = color2 * fractionV + color3 * (1 - fractionV);
+		color4 = color2 * (1 - fractionV) + color4 * fractionV;
 
-		return color1.toTGAColor();
+		return color4.toTGAColor();
 	}
 
 	TGAColor trilinearFilter(float u, float v, float level) {
 
-		utility::Color color1, color2;
-		int downLevel = floor(level);
-		color1 = color1.toColor(bilinearFilter(u, v, downLevel));
+		int downLevel = level;
+		utility::Color color1(bilinearFilter(u, v, downLevel)), color2;
+		 
 		if (downLevel + 1 >= m_Texture.size())
 			return color1.toTGAColor();
 		
 		color2 = color2.toColor(bilinearFilter(u, v, downLevel + 1));
 		float fractionW = level - downLevel;
-		color1 = color2 * fractionW + color1 * (1 - fractionW);
 
-		// color1 is the result of trilinear interpolation
-		return color1.toTGAColor();
+		// lerping  in the w direction between two mipmaps
+		color2 = color1 * (1 - fractionW) + color2 * fractionW;
+
+		return color2.toTGAColor();
 	}
 
 	TGAColor nearestFilter(float u, float v, int level) {
 
-		u *= (m_Texture[level].width() - 1), v *= (m_Texture[level].height() - 1);
+		u = u * (m_Texture[level].width() - 1) - 0.5, v = v * (m_Texture[level].height() - 1) - 0.5;
 		
-		return m_Texture[level].get(int(u + 0.5), int(v + 0.5));
+		return m_Texture[level].get(int(u), int(v));
 	}
 
 	float Repeat(float u) {
 
-		if (u > 1.0f || u < 0.0f) {
-			u = u - floor(u);
-			if (u < 1e-6)
-				u = 1.0f;
-		}
-		return u;
+		// we map 1.25 to 0.25 and we map integers to 0
+		// we map -0.25 to 0.75 and -0.75 to 0.25 to not reflect the repeat
+		return u - floor(u);
 	}
 
 	float mirroredRepeat(float u) {
 
-		if (u > 1.0f || u < 0.0f)
-			u = 1 - Repeat(u);
-		return u;
+		// we map 1.25 to 0.75 and we map integers to 0
+		// we map -0.25 to 0.25 and -0.75 to 0.75 to reflect the repeat
+		return 1 - Repeat(u);
+	}
+
+	float clamp(float u) {
+
+		return std::max(0.0f, std::min(1.0f, u));
 	}
 
 public:

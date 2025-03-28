@@ -13,15 +13,18 @@ int main(int argc, char** argv) {
     const char* texLocation1 = "res/obj/african_head/african_head_diffuse.tga",
         * texLocation2 = "res/obj/diablo3_pose/diablo3_pose_diffuse.tga",
     *texLocation3 = "res/checkerboard.tga";
-    texture.read_tga_file(texLocation1);
+    texture.read_tga_file(texLocation2);
     texture.flip_vertically();
     const char* location1 = "res/obj/african_head/african_head.obj",
         *location2 = "res/obj/diablo3_pose/diablo3_pose.obj";
-    Model myModel(location1);
+    Model myModel(location2);
 
-    float* zBuffer = new float [width * height];
-    for(int i = 0; i < width * height; i++)
-		zBuffer[i] = std::numeric_limits<float>::max();
+    float** zBuffer = new float* [height];
+    for (int i = 0; i < height; i++) {
+        zBuffer[i] = new float[width];
+        for (int j = 0; j < width; j++)
+            zBuffer[i][j] = std::numeric_limits<float>::max();
+    }
 
     utility::Camera myCamera;
 
@@ -36,20 +39,21 @@ int main(int argc, char** argv) {
 
     glm::mat4  viewport = utility::viewport(0, 0, width, height);
     
-    /*
-    std::vector<glm::vec4> vertices(myModel.m_Vertices.size());
-    for (int i = 0; i < vertices.size(); i++)
-        vertices[i] = glm::vec4(myModel.m_Vertices[i], 1.0f);
-    */
-
     std::vector<glm::vec4> vertices{
 
-        glm::vec4(1.0f, 1.0f, -7.0f, 1.0f),
-        glm::vec4(-1.0f, 1.0f, -7.0f, 1.0f),
+        glm::vec4(1.0f, 1.0f, -10.0f, 1.0f),
+        glm::vec4(-1.0f, 1.0f, -10.0f, 1.0f),
         glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
         glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f)
     };
     
+    
+    vertices.clear();
+    vertices.resize(myModel.m_Vertices.size());
+    for (int i = 0; i < vertices.size(); i++)
+        vertices[i] = glm::vec4(myModel.m_Vertices[i], 1.0f);
+    
+
     std::vector<glm::vec3> textureCoords{
 
         glm::vec3(1.0f, 1.0f, 0.0f),
@@ -72,16 +76,17 @@ int main(int argc, char** argv) {
         Face(1, 3, 2, 1, 3, 2, 1, 3, 2)
     };
 
-    Rasterizer myRasterizer(vertices, faces, model, view, proj, viewport, framebuffer, texture, zBuffer, RenderMode::SOLID, ProjectionMode::PERSPECTIVE);
-    myRasterizer.setFilterMode(FilterMode::BILINEAR);
+    Rasterizer myRasterizer(vertices, myModel.m_Faces, model, view, proj, viewport, framebuffer, texture, zBuffer, RenderMode::SOLID, ProjectionMode::PERSPECTIVE);
+    myRasterizer.setFilterMode(FilterMode::NEAREST);
     myRasterizer.setWrapModeU(WrapMode::CLAMP);
     myRasterizer.setWrapModeV(WrapMode::CLAMP);
-//    myRasterizer.setTextureCoords(myModel.m_Textures);
-    myRasterizer.setColors(colors);
-    myRasterizer.setAttributeMode(AttributeMode::COLOR);
+    myRasterizer.setTextureCoords(myModel.m_Textures);
+    //myRasterizer.setColors(colors);
+    //myRasterizer.setAttributeMode(AttributeMode::COLOR);
+    //myRasterizer.setTextureCoords(textureCoords);
     myRasterizer.process();
     myRasterizer.draw();
-    framebuffer.write_tga_file("framebuffer.tga");
+    framebuffer.write_tga_file("Export/framebufferPerspectiveTextureNearest.tga");
 
     delete zBuffer;
 

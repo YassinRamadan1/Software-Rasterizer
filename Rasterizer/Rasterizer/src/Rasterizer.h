@@ -25,12 +25,12 @@ private:
 	WrapMode m_WrapModeU, m_WrapModeV;
 	FilterMode m_FilterMode;
 	TGAImage* m_Framebuffer, * m_Texture;
-	float* m_DepthBuffer, m_Far, m_Near, m_Viewport_Near = 0, m_Viewport_Far = 1;
+	float m_Far, m_Near, m_Viewport_Near = 0, m_Viewport_Far = 1,** m_DepthBuffer;
 
 public:
 
 	Rasterizer(std::vector<glm::vec4> vertices, std::vector<Face> faces, glm::mat4 model, glm::mat4 view, glm::mat4 projection,
-		glm::mat4 viewport, TGAImage& framebuffer, TGAImage& texture, float* depthBuffer, RenderMode renderMode = RenderMode::SOLID,
+		glm::mat4 viewport, TGAImage& framebuffer, TGAImage& texture, float**& depthBuffer, RenderMode renderMode = RenderMode::SOLID,
 		ProjectionMode projectionMode = ProjectionMode::PERSPECTIVE, AttributeMode attributeMode = AttributeMode::TEXTURE, WrapMode wrapModeU = WrapMode::REPEAT,
 		WrapMode wrapModeV = WrapMode::REPEAT, FilterMode filterMode = FilterMode::NEAREST, float near = 1.0f, float far = 100.0f, float viewportNear = 0.0f,
 		float viewportFar = 1.0f) 
@@ -160,7 +160,7 @@ public:
 		m_Texture = &texture;
 	}
 
-	void setDepthBuffer(float* depthBuffer) {
+	void setDepthBuffer(float**& depthBuffer) {
 		m_DepthBuffer = depthBuffer;
 	}
 
