@@ -163,13 +163,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\draw.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\tgaimage.cpp" />
-    <ClCompile Include="src\utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\draw.h" />
+    <ClInclude Include="src\Drawer.h" />
+    <ClInclude Include="src\PointsProcessor.h" />
+    <ClInclude Include="src\PrimitiveAssembler.h" />
+    <ClInclude Include="src\Rasterizer.h" />
+    <ClInclude Include="src\TextureProcessor.h" />
     <ClInclude Include="src\utility.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\tgaimage.h" />

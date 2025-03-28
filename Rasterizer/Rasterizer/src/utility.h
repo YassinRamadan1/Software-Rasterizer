@@ -11,6 +11,54 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#include "tgaimage.h"
+
+enum class RenderMode {
+	WIREFRAME,
+	SOLID
+};
+
+enum class ProjectionMode {
+	PERSPECTIVE,
+	ORTHOGRAPHIC
+};
+
+enum class AttributeMode {
+	COLOR,
+	TEXTURE
+};
+
+enum class WrapMode {
+	REPEAT,
+	MIRROR,
+	CLAMP
+};
+
+enum class FilterMode {
+	NEAREST,
+	BILINEAR,
+	TRILINEAR
+};
+
+struct Face {
+
+	int position[3];
+	int texture[3];
+	int color[3];
+	Face() {}
+
+	Face(int position0, int position1, int position2, int tex0, int tex1, int tex2) {
+		position[0] = position0, position[1] = position1, position[2] = position2,
+			texture[0] = tex0, texture[1] = tex1, texture[2] = tex2;
+	}
+
+	Face(int position0, int position1, int position2, int c0, int c1, int c2, int tex0, int tex1, int tex2) {
+		position[0] = position0, position[1] = position1, position[2] = position2,
+			color[0] = c0, color[1] = c1, color[2] = c2,
+			texture[0] = tex0, texture[1] = tex1, texture[2] = tex2;
+	}
+};
+
 namespace utility {
 
 	const float EPSILON = 1e-5;
@@ -23,77 +71,96 @@ namespace utility {
 		FORWARD, BACKWARD, LEFT, RIGHT
 	};
 
-	float cross(glm::vec2 v1, glm::vec2 v2, glm::vec2 v3);
+	glm::mat4 viewport(int x, int y, int w, int h, int near = 0, int far = 1) {
 
-	glm::mat4 viewport(int x, int y, int w, int h, int near = 0, int far = 1);
-	
-	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far);
+		return glm::mat4(w / 2.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, h / 2.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, (far - near) / 2.0f, 0.0f,
+			x + w / 2.0f, y + h / 2.0f, (far + near) / 2.0f, 1.0f);
+	}
 
-	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far);
+	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far) {
 
-    class Transform {
+		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
 
-public:
-		float near, far;
-        glm::mat4 model;
-		glm::mat4 normalMatrix;
-        glm::mat4 view;
-        glm::mat4 projection;
-		glm::mat4 viewport;
+		return glm::perspective(fovy, aspectRatio, near, far);
+	}
 
-        // Default constructor initializes to identity matrices
-        Transform() :
-            model(1.0f),
-			normalMatrix(1.0f),
-            view(1.0f),
-            projection(1.0f),
-			viewport(1.0f) {}
+	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far) {
 
-        // Parameterized constructor
-        Transform(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection, const glm::mat4& viewport) :
-            model(model),
-            view(view),
-            projection(projection),
-			viewport(viewport){}
+		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
 
-        // Convenience method to get the combined MVP matrix
-        glm::mat4 getModelViewProjection() const {
-            return projection * view * model;
-        }
-    };
+		return glm::ortho(-r, r, -t, t, near, far);
+	}
 
-	class Triangle {
+	class Color {
+
 	public:
+		float r, g, b, a;
 
-		glm::vec4 position[3];
-		glm::vec3 textureCoord[3];
-		glm::vec4 color[3];
-		glm::vec3 normal;
+		Color() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
+		Color(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
-		Triangle() {
-
+		Color(TGAColor tga) {
+			b = tga[0] / 255.0f;
+			g = tga[1] / 255.0f;
+			r = tga[2] / 255.0f;
+			a = tga[3] / 255.0f;
 		}
-		Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3,
-				glm::vec3 color1, glm::vec3 color2, glm::vec3 color3) {
-			
-			position[0] = glm::vec4(position1, 1.0f), position[1] = glm::vec4(position2, 1.0f),
-				position[2] = glm::vec4(position3, 1.0f);
-			color[0] = glm::vec4(color1, 255.0f), color[1] = glm::vec4(color2, 255.0f),
-				color[2] = glm::vec4(color3, 255.0f);
-		}
+		
+		void init(float v, float alpha = 1.0f) {
 
-		Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3) {
-			
-			position[0] = glm::vec4(position1, 1.0f), position[1] = glm::vec4(position2, 1.0f),
-			position[2] = glm::vec4(position3, 1.0f);
+			b = g = r = v, a = alpha;
 		}
 
-		Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3, glm::vec2 textureCoord1,
-				glm::vec2 textureCoord2, glm::vec2 textureCoord3) {
+		void set(float r, float g, float b, float a = 1.0f) {
+
+			this->r = r, this->g = g, this->b = b, this->a = a;
+		}
+		Color toColor(TGAColor tga) {
+
+			float b = tga[0] / 255.0f;
+			float g = tga[1] / 255.0f;
+			float r = tga[2] / 255.0f;
+			float a = tga[3] / 255.0f;
+			return Color(r, g, b, a);
+		}
+
+		TGAColor toTGAColor() const {
+			TGAColor tga;
+			tga[0] = static_cast<unsigned char>(std::clamp(b * 255.0f, 0.0f, 255.0f));
+			tga[1] = static_cast<unsigned char>(std::clamp(g * 255.0f, 0.0f, 255.0f));
+			tga[2] = static_cast<unsigned char>(std::clamp(r * 255.0f, 0.0f, 255.0f));
 			
-			position[0] = glm::vec4(position1, 1.0f), position[1] = glm::vec4(position2, 1.0f),
-				position[2] = glm::vec4(position3, 1.0f), textureCoord[0] = glm::vec3(textureCoord1, 0.0f),
-				textureCoord[1] = glm::vec3(textureCoord2, 0.0f), textureCoord[2] = glm::vec3(textureCoord3, 0.0f);
+			//tga[3] = static_cast<unsigned char>(std::clamp(a * 255.0f, 0.0f, 255.0f));
+			tga[3] = 255;
+			return tga;
+		}
+
+		Color operator+(const Color& other) const {
+			return Color(r + other.r, g + other.g, b + other.b, a + other.a);
+		}
+
+		Color operator-(const Color& other) const {
+			return Color(r - other.r, g - other.g, b - other.b, a - other.a);
+		}
+
+		Color operator*(float scalar) const {
+			return Color(r * scalar, g * scalar, b * scalar, a * scalar);
+		}
+
+		float& operator[](int i) {
+			switch (i) {
+			
+				case 0:
+					return r;
+				case 1:
+					return g;
+				case 2:
+					return b;
+				case 3:
+					return a;
+			}
 		}
 	};
 
@@ -168,4 +235,278 @@ public:
 			m_Up = glm::cross(m_Right, m_Front);
 		}
 	};
+
+	template<typename T, typename T2, size_t dp>
+	class FixedPoint {
+
+		static FixedPoint create(T val) {
+
+			FixedPoint fixed;
+			fixed.value = val;
+			return fixed;
+		}
+
+	public:
+
+		T value = T(0);
+
+		FixedPoint() {}
+
+		FixedPoint(double val) {
+
+			set(val);
+		}
+		
+		void setULP() {
+			value = 1;
+		}
+
+		void set(double val) {
+
+			value = (val * (1 << dp) + ((val < 0) ? -0.5 : 0.5));
+		}
+
+		operator double() const {
+
+			return double(value) / (1 << dp);
+		}
+
+		FixedPoint operator-() {
+
+			return create(-value);
+		}
+
+		FixedPoint operator+(FixedPoint& other) {
+
+			return create(value + other.value);
+		}
+
+		FixedPoint& operator+=(FixedPoint& other) {
+
+			value += other.value;
+			return *this;
+		}
+
+		FixedPoint operator-(FixedPoint& other) {
+
+			return create(value - other.value);
+		}
+
+		FixedPoint& operator-=(FixedPoint& other) {
+
+			value -= other.value;
+			return *this;
+		}
+
+		FixedPoint operator*(FixedPoint& other) {
+
+			return create((T2(value) * T2(other.value)) >> dp);
+		}
+
+		FixedPoint& operator*=(FixedPoint& other) {
+
+			value = (T2(value) * T2(other.value)) >> dp;
+			return *this;
+		}
+
+		FixedPoint operator/(FixedPoint& other) {
+
+			if (other.value == 0) {
+				throw std::runtime_error("Division by zero");
+			}
+			return create(T2(value << dp) / T2(other.value));
+		}
+
+		FixedPoint& operator/=(FixedPoint& other) {
+
+			if (other.value == 0) {
+				throw std::runtime_error("Division by zero");
+			}
+			value = T2(value << dp) / T2(other.value);
+			return *this;
+		}
+
+		bool operator==(FixedPoint& other) {
+			return value == other.value;
+		}
+
+		bool operator<(FixedPoint& other) {
+			return value < other.value;
+		}
+
+		bool operator<=(FixedPoint& other) {
+			return value <= other.value;
+		}
+	};
+
+	template<typename T>
+	class vec2 {
+
+	public:
+		union {
+			struct {
+				T x, y;
+			};
+			struct {
+				T r, g;
+			};
+			struct {
+				T s, t;
+			};
+			T data[2];
+		};
+
+		vec2() : x(0), y(0) {}
+		vec2(T x, T y) : x(x), y(y) {}
+
+		T& operator[](size_t index) {
+			return data[index];
+		}
+
+		const T& operator[](size_t index) const {
+			return data[index];
+		}
+
+		vec2 operator+(const vec2& other) const {
+
+			return vec2(x + other.x, y + other.y);
+		}
+
+		vec2 operator-(const vec2& other) const {
+
+			return vec2(x - other.x, y - other.y);
+		}
+
+		vec2 operator*(T val) const {
+
+			return vec3(val * x, val * y);
+		}
+	};
+
+	template<typename T>
+	class vec3 {
+
+	public:
+		union {
+			struct {
+				T x, y, z;
+			};
+			struct {
+				T r, g, b;
+			};
+			struct {
+				T s, t, p;
+			};
+			T data[3];
+		};
+
+		vec3() : x(0), y(0), z(0) {}
+		vec3(T x, T y, T z) : x(x), y(y), z(z) {}
+
+		T& operator[](size_t index) {
+			return data[index];
+		}
+
+		const T& operator[](size_t index) const {
+			return data[index];
+		}
+
+		vec3 operator+(const vec3& other) const {
+
+			return vec3(x + other.x, y + other.y, z + other.z);
+		}
+
+		vec3 operator-(const vec3& other) const {
+
+			return vec3(x - other.x, y - other.y, z - other.z);
+		}
+
+		vec3 operator*(T val) const {
+
+			return vec3(val * x, val * y, val * z);
+		}
+	};
+
+	template<typename T>
+	class vec4 {
+
+	public:
+		union {
+			struct {
+				T x, y, z, w;
+			};
+			struct {
+				T r, g, b, a;
+			};
+			struct {
+				T s, t, p, q;
+			};
+			T data[4];
+		};
+
+		vec4() : x(0), y(0), z(0), w(0) {}
+		vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+
+		T& operator[](size_t index) {
+			return data[index];
+		}
+
+		const T& operator[](size_t index) const {
+			return data[index];
+		}
+
+		vec4 operator+(const vec4& other) const {
+
+			return vec4(x + other.x, y + other.y, z + other.z, w + other.w);
+		}
+
+		vec4 operator-(const vec4& other) const {
+
+			return vec4(x - other.x, y - other.y, z - other.z, w - other.w);
+		}
+
+		vec4 operator*(T val) const {
+
+			return vec4(val * x, val * y, val * z, val * w);
+		}
+	};
+
+	template<typename T>
+	T dot(vec2<T>& a, vec2<T>& b) {
+
+		return a.x * b.x + a.y * b.y;
+	}
+
+	template<typename T>
+	T dot(vec3<T>& a, vec3<T>& b) {
+
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
+
+	template<typename T>
+	T dot(vec4<T>& a, vec4<T>& b) {
+
+		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+	}
+
+	template<typename T>
+	T cross(vec2<T>& v0, vec2<T>& v1, vec2<T>& v2) {
+
+		return (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
+	}
 }
+
+using fp15_16 = utility::FixedPoint<int32_t, int64_t, 16>;
+using fp22_9 = utility::FixedPoint<int32_t, int64_t, 9>;
+using fp46_16 = utility::FixedPoint<int64_t, int64_t, 16>;
+
+class Triangle {
+public:
+
+	glm::vec4 position[3];
+	glm::vec3 textureCoord[3];
+	utility::Color color[3];
+	glm::vec3 normal;
+
+	Triangle() {}
+};
