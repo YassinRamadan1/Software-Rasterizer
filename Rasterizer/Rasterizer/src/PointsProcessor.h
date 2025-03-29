@@ -9,35 +9,17 @@ class PointsProcessor {
 	glm::mat4* m_Model, *m_View, *m_Projection;
 public:
 	
-	PointsProcessor() : m_Vertices(nullptr), m_Model(nullptr), m_View(nullptr), m_Projection(nullptr) {}
+	PointsProcessor();
 
-	void setModelMatrix(glm::mat4& model) {
-		m_Model = &model;
-	}
+	void setModelMatrix(glm::mat4& model);
 
-	void setViewMatrix(glm::mat4& view) {
-		m_View = &view;
-	}
+	void setViewMatrix(glm::mat4& view);
 
-	void setProjectionMatrix(glm::mat4& projection) {
-		m_Projection = &projection;
-	}
+	void setProjectionMatrix(glm::mat4& projection);
 
-	void setVertices(std::vector<glm::vec4>& vertices) {
-		m_Vertices = &vertices;
-	}
+	void setVertices(std::vector<glm::vec4>& vertices);
 
-	void processPoints() {
-		
-		glm::mat4 mvp = (*m_Projection) * (*m_View) * (*m_Model);
-		glm::vec4 transformedVertex;
-		for (auto& vertex : (*m_Vertices)) {
-			transformedVertex = mvp * vertex;
-			m_TransformedVertices.push_back(transformedVertex);
-		}
-	}
+	void processPoints();
 
-	std::vector<glm::vec4>& getTransformedVertices() {
-		return m_TransformedVertices;
-	}
+	std::vector<glm::vec4>& getTransformedVertices();
 };

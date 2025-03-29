@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 
 #include "tgaimage.h"
+#include "Color.h"
 
 enum class RenderMode {
 	WIREFRAME,
@@ -40,11 +41,17 @@ enum class FilterMode {
 	TRILINEAR
 };
 
+enum class BUFFER_TYPE {
+	DEPTH_BUFFER,
+	COLOR_BUFFER
+};
+
 struct Face {
 
 	int position[3];
 	int texture[3];
 	int color[3];
+	int normal[3];
 	Face() {}
 
 	Face(int position0, int position1, int position2, int tex0, int tex1, int tex2) {
@@ -59,6 +66,17 @@ struct Face {
 	}
 };
 
+class Triangle {
+public:
+
+	glm::vec4 position[3];
+	glm::vec3 textureCoord[3];
+	Color color[3];
+	glm::vec3 normal;
+
+	Triangle() {}
+};
+
 namespace utility {
 
 	const float EPSILON = 1e-5;
@@ -71,98 +89,11 @@ namespace utility {
 		FORWARD, BACKWARD, LEFT, RIGHT
 	};
 
-	glm::mat4 viewport(int x, int y, int w, int h, int near = 0, int far = 1) {
+	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far);
 
-		return glm::mat4(w / 2.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, h / 2.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, (far - near) / 2.0f, 0.0f,
-			x + w / 2.0f, y + h / 2.0f, (far + near) / 2.0f, 1.0f);
-	}
+	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far);
 
-	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far) {
-
-		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
-
-		return glm::perspective(fovy, aspectRatio, near, far);
-	}
-
-	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far) {
-
-		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
-
-		return glm::ortho(-r, r, -t, t, near, far);
-	}
-
-	class Color {
-
-	public:
-		float r, g, b, a;
-
-		Color() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
-		Color(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
-
-		Color(TGAColor tga) {
-			b = tga[0] / 255.0f;
-			g = tga[1] / 255.0f;
-			r = tga[2] / 255.0f;
-			a = tga[3] / 255.0f;
-		}
-		
-		void init(float v, float alpha = 1.0f) {
-
-			b = g = r = v, a = alpha;
-		}
-
-		void set(float r, float g, float b, float a = 1.0f) {
-
-			this->r = r, this->g = g, this->b = b, this->a = a;
-		}
-		Color toColor(TGAColor tga) {
-
-			float b = tga[0] / 255.0f;
-			float g = tga[1] / 255.0f;
-			float r = tga[2] / 255.0f;
-			float a = tga[3] / 255.0f;
-			return Color(r, g, b, a);
-		}
-
-		TGAColor toTGAColor() const {
-			TGAColor tga;
-			tga[0] = static_cast<unsigned char>(std::clamp(b * 255.0f, 0.0f, 255.0f));
-			tga[1] = static_cast<unsigned char>(std::clamp(g * 255.0f, 0.0f, 255.0f));
-			tga[2] = static_cast<unsigned char>(std::clamp(r * 255.0f, 0.0f, 255.0f));
-			
-			//tga[3] = static_cast<unsigned char>(std::clamp(a * 255.0f, 0.0f, 255.0f));
-			tga[3] = 255;
-			return tga;
-		}
-
-		Color operator+(const Color& other) const {
-			return Color(r + other.r, g + other.g, b + other.b, a + other.a);
-		}
-
-		Color operator-(const Color& other) const {
-			return Color(r - other.r, g - other.g, b - other.b, a - other.a);
-		}
-
-		Color operator*(float scalar) const {
-			return Color(r * scalar, g * scalar, b * scalar, a * scalar);
-		}
-
-		float& operator[](int i) {
-			switch (i) {
-			
-				case 0:
-					return r;
-				case 1:
-					return g;
-				case 2:
-					return b;
-				case 3:
-					return a;
-			}
-		}
-	};
+	std::vector<std::string> split(std::string& line, char delimiter);
 
 	class Camera {
 	public:
@@ -499,14 +430,3 @@ namespace utility {
 using fp15_16 = utility::FixedPoint<int32_t, int64_t, 16>;
 using fp22_9 = utility::FixedPoint<int32_t, int64_t, 9>;
 using fp46_16 = utility::FixedPoint<int64_t, int64_t, 16>;
-
-class Triangle {
-public:
-
-	glm::vec4 position[3];
-	glm::vec3 textureCoord[3];
-	utility::Color color[3];
-	glm::vec3 normal;
-
-	Triangle() {}
-};

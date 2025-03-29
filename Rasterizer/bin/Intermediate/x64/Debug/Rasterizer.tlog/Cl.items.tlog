@@ -1,2 +1,11 @@
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Color.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\Color.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Drawer.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\Drawer.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\FrameBuffer.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\FrameBuffer.obj
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\main.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\main.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Mesh.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\Mesh.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\PointsProcessor.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\PointsProcessor.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\PrimitiveAssembler.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\PrimitiveAssembler.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\Rasterizer.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\Rasterizer.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\TextureProcessor.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\TextureProcessor.obj
 C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\tgaimage.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\tgaimage.obj
+C:\dev\Software-Rasterizer\Rasterizer\Rasterizer\src\utility.cpp;C:\dev\Software-Rasterizer\Rasterizer\bin\Intermediate\x64\Debug\utility.obj

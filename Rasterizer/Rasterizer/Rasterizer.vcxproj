@@ -163,17 +163,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Color.cpp" />
+    <ClCompile Include="src\Drawer.cpp" />
+    <ClCompile Include="src\FrameBuffer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\PointsProcessor.cpp" />
+    <ClCompile Include="src\PrimitiveAssembler.cpp" />
+    <ClCompile Include="src\Rasterizer.cpp" />
+    <ClCompile Include="src\TextureProcessor.cpp" />
     <ClCompile Include="src\tgaimage.cpp" />
+    <ClCompile Include="src\utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Color.h" />
     <ClInclude Include="src\Drawer.h" />
+    <ClInclude Include="src\FrameBuffer.h" />
     <ClInclude Include="src\PointsProcessor.h" />
     <ClInclude Include="src\PrimitiveAssembler.h" />
     <ClInclude Include="src\Rasterizer.h" />
     <ClInclude Include="src\TextureProcessor.h" />
     <ClInclude Include="src\utility.h" />
-    <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\tgaimage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
