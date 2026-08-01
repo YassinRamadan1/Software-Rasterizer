@@ -53,6 +53,7 @@ float Texture::getMipmapLevel(glm::vec2 tex00, glm::vec2 tex10, glm::vec2 tex01)
 {
 	tex10 -= tex00;
 	tex01 -= tex00;
+
 	tex10 *= glm::vec2(m_Texture[0].width(), m_Texture[0].height());
 	tex01 *= glm::vec2(m_Texture[0].width(), m_Texture[0].height());
 

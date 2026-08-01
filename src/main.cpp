@@ -1,11 +1,11 @@
 #include "tgaimage.h"
 #include "Mesh.h"
-#include "Rasterizer.h"
 #include "utility.h"
 #include "FrameBuffer.h"
 
 #include "vertexProcessor.h"
 #include "primitiveAssembler.h"
+#include "rasterizer.h"
 
 constexpr int width = 800;
 constexpr int height = 800;
@@ -97,6 +97,8 @@ int main(int argc, char** argv) {
         std::cout << primitive_assembler::triangles[i].position[0].x << '\n';
     }
 
+    Rasterizer r;
+    r.setRenderMode(RenderMode::SOLID);
     std::cout << "---------------------------------\n";
 //    Rasterizer myRasterizer(Model1.m_Vertices, Model1.m_Faces, model, view, proj, framebuffer, texture1, RenderMode::SOLID, ProjectionMode::PERSPECTIVE);
 //    myRasterizer.setFilterMode(FilterMode::BILINEAR);

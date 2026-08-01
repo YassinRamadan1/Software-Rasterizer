@@ -1,77 +1,47 @@
-/*#pragma once
+#pragma once
+#include "utility.h"
+#include "texture.h"
+#include "frameBuffer.h"
 
-#include "Color.h"
-#include "PointsProcessor.h"
-#include "TextureProcessor.h"
-#include "PrimitiveAssembler.h"
-#include "Drawer.h"
-
-class Rasterizer {
-
+class Rasterizer
+{
 private:
+    RenderMode m_RenderMode;
+    /*
+    bool isTopLeftEdge(utility::vec2<fp46_16> v0, utility::vec2<fp46_16> v1);
 
-	PointsProcessor m_PointsProcessor;
-	TextureProcessor m_TextureProcessor;
-	PrimitiveAssembler m_PrimitiveAssembler;
-	Drawer m_Drawer;
+    void drawSolidOrthoTexture();
 
-	std::vector<glm::vec4> m_Vertices;
-	std::vector<glm::vec3> m_TextureCoords;
-	std::vector<Color> m_Colors;
-	std::vector<Face> m_Faces;
-	glm::mat4 m_Model, m_View, m_Projection;
-	RenderMode m_RenderMode;
-	ProjectionMode m_ProjectionMode; 
-	AttributeMode m_AttributeMode;
-	WrapMode m_WrapModeU, m_WrapModeV;
-	FilterMode m_FilterMode;
-	TGAImage* m_Texture;
-	FrameBuffer* m_Framebuffer;
-	float m_Far, m_Near;
+    void drawSolid1(Triangle& triangle);
+
+    void drawSolidPerspectiveTexture();
+
+    void drawSolid2(Triangle& triangle);
+
+    void drawSolidPerspectiveColor();
+
+    void drawSolid3(Triangle& triangle);
+
+    void drawSolidOrthoColor();
+
+    void drawSolid4(Triangle& triangle);
+
+    void drawLine(glm::ivec2 v1, glm::ivec2 v2, TGAImage& framebuffer, TGAColor c);
+
+    void drawTriangleWireFrame(glm::ivec2 v1, glm::ivec2 v2, glm::ivec2 v3, TGAImage& framebuffer, TGAColor c);
+    */
+    float getDistanceFromLine(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1);
+    
+    glm::vec3 getBarycentricCoords(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& p2);
+
+    void drawTextured(const Triangle& triangle, const Texture& texture, FrameBuffer& frameBuffer);
+
+    void drawColored(const Triangle& triangle, FrameBuffer& frameBuffer);
 
 public:
+    void draw(const std::vector<Triangle>& triangles, const Texture& texture, FrameBuffer& frameBuffer);
 
-	Rasterizer(std::vector<glm::vec4> vertices, std::vector<Face> faces, glm::mat4 model, glm::mat4 view, glm::mat4 projection,
-		FrameBuffer& framebuffer, TGAImage& texture, RenderMode renderMode = RenderMode::SOLID,
-		ProjectionMode projectionMode = ProjectionMode::PERSPECTIVE, AttributeMode attributeMode = AttributeMode::TEXTURE,
-		WrapMode wrapModeU = WrapMode::REPEAT, WrapMode wrapModeV = WrapMode::REPEAT,
-		FilterMode filterMode = FilterMode::NEAREST, float near = 1.0f, float far = 100.0f);
+    void draw(const std::vector<Triangle>& triangles, FrameBuffer& frameBuffer);
 
-	void process();
-
-	void draw();
-
-	void setVertices(std::vector<glm::vec4> vertices);
-
-	void setTextureCoords(std::vector<glm::vec3> textureCoords);
-
-	void setColors(std::vector<Color> colors);
-
-	void setFaces(std::vector<Face> faces);
-
-	void setModelMatrix(glm::mat4 model);
-
-	void setViewMatrix(glm::mat4 view);
-
-	void setProjectionMatrix(glm::mat4 projection);
-
-	void setRenderMode(RenderMode renderMode);
-
-	void setProjectionMode(ProjectionMode projectionMode);
-
-	void setAttributeMode(AttributeMode attributeMode);
-
-	void setWrapModeU(WrapMode wrapModeU);
-
-	void setWrapModeV(WrapMode wrapModeV);
-
-	void setFilterMode(FilterMode filterMode);
-
-	void setFramebuffer(FrameBuffer& framebuffer);
-
-	void setTexture(TGAImage& texture);
-
-	void setFar(float far);
-
-	void setNear(float near);
-};*/
+    void setRenderMode(RenderMode renderMode);
+};
