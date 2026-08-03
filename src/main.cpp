@@ -26,7 +26,7 @@ std::string africanHeadLocation = RESOURCES_PATH + std::string("obj/african_head
     boggieBodyLocation = RESOURCES_PATH + std::string("obj/boggie/body.obj"),
     boggieBodyTexLocation = RESOURCES_PATH + std::string("obj/boggie/body_diffuse.tga");
 
-FrameBuffer framebuffer(width, height);
+FrameBuffer framebuffer(width, height, NumberOfSamples::SIXTEEN_SAMPLES);
 Rasterizer r;
 
 void diablo(FrameBuffer& framebuffer)
@@ -47,12 +47,13 @@ void diablo(FrameBuffer& framebuffer)
     vertex_processor::processVertices(diabloMesh.vertices, proj * view * model);
 
     std::vector<glm::vec3> colors(diabloMesh.textureCoords.size(), glm::vec3(1.0, 0., 0.));
-    //std::vector<Face> faces{ diabloMesh.faces[0]};
+
     primitive_assembler::processPrimitives(vertex_processor::transformedVertices, std::vector<glm::vec3>(), colors, diabloMesh.faces, viewport);
 
     r.setRenderMode(RenderMode::WIREFRAME);
+    r.setCulledWindingOrder(WindingOrder::CW);
     r.draw(primitive_assembler::triangles, framebuffer);
-    framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("diablo.tga"));
+    framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("export/diablo.tga"));
 }
 
 void africanHead(FrameBuffer& framebuffer)
@@ -72,11 +73,14 @@ void africanHead(FrameBuffer& framebuffer)
 
     vertex_processor::processVertices(africanHeadMesh.vertices, proj * view * model);
 
-    primitive_assembler::processPrimitives(vertex_processor::transformedVertices, africanHeadMesh.textureCoords, std::vector<glm::vec3>(), africanHeadMesh.faces, viewport);
+    std::vector<glm::vec3> colors(africanHeadMesh.textureCoords.size(), glm::vec3(1.0, 0., 0.));
 
-    r.setRenderMode(RenderMode::SOLID);
-    r.draw(primitive_assembler::triangles, africanHeadTex, framebuffer);
-    framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("africanHeadWireFramed.tga"));
+    primitive_assembler::processPrimitives(vertex_processor::transformedVertices, africanHeadMesh.textureCoords, colors, africanHeadMesh.faces, viewport);
+
+    r.setRenderMode(RenderMode::WIREFRAME);
+    r.setCulledWindingOrder(WindingOrder::CW);
+    r.draw(primitive_assembler::triangles, framebuffer);
+    framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("export/africanHead.tga"));
 }
 
 void triangle(FrameBuffer& framebuffer)
@@ -116,24 +120,24 @@ void triangle(FrameBuffer& framebuffer)
 
     primitive_assembler::processPrimitives(vertex_processor::transformedVertices, std::vector<glm::vec3>(), colors, faces, viewport);
 
-    r.setRenderMode(RenderMode::WIREFRAME);
+    r.setRenderMode(RenderMode::SOLID);
+    r.setCulledWindingOrder(WindingOrder::CCW);
     r.draw(primitive_assembler::triangles, framebuffer);
-    framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("triangle.tga"));
+    framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("export/triangle.tga"));
 }
 
 int main(int argc, char** argv)
 {
    // boggieEyeTex(boggieEyesTexLocation), boggieBodyTex(boggieBodyTexLocation),
    //     boggieHeadTex(boggieHeadTexLocation),
-    
    //     africanHeadEyeInnerTex(africanHeadEyeInnerTexLocation), africanHeadEyeOuterTex(africanHeadEyeOuterTexLocation);
-
-    //
-    //, boggieEye(boggieEyesLocation), boggieBody(boggieBodyLocation), boggieHead(boggieHeadLocation)
-    //africanHeadEyeInner(africanHeadEyeInnerLocation), africanHeadEyeOuter(africanHeadEyeOuterLocation);
+   //
+   //, boggieEye(boggieEyesLocation), boggieBody(boggieBodyLocation), boggieHead(boggieHeadLocation)
+   // africanHeadEyeInner(africanHeadEyeInnerLocation), africanHeadEyeOuter(africanHeadEyeOuterLocation);
 
     
     //triangle(framebuffer);
     diablo(framebuffer);
+    //africanHead(framebuffer);
     return 0;
 }

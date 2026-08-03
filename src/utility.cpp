@@ -43,6 +43,24 @@ namespace utility
 		}
 		return result;
 	}
+
+	const glm::vec2* getMSAASamples(NumberOfSamples numberOfSamples)
+	{
+		switch (numberOfSamples)
+		{
+		case NumberOfSamples::ONE_SAMPLE:
+			return MSAA1;
+		case NumberOfSamples::TWO_SAMPLES:
+			return MSAA2;
+		case NumberOfSamples::FOUR_SAMPLES:
+			return MSAA4;
+		case NumberOfSamples::EIGHT_SAMPLES:
+			return MSAA8;
+		case NumberOfSamples::SIXTEEN_SAMPLES:
+			return MSAA16;
+		}
+		return nullptr;
+	}
 }
 
 namespace clr

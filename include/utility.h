@@ -37,10 +37,20 @@ enum class FilterMode
 	TRILINEAR
 };
 
-enum class BUFFER_TYPE
+enum class BufferType
 {
 	DEPTH_BUFFER,
 	COLOR_BUFFER
+};
+
+enum class WindingOrder
+{
+	CCW, CW, NONE
+};
+
+enum class NumberOfSamples
+{
+	ONE_SAMPLE = 1, TWO_SAMPLES = 2, FOUR_SAMPLES = 4, EIGHT_SAMPLES = 8, SIXTEEN_SAMPLES = 16
 };
 
 struct Face
@@ -62,6 +72,60 @@ struct Triangle
 	Triangle() = default;
 };
 
+inline constexpr glm::vec2 MSAA1[1] =
+{
+		{0.5f, 0.5f},
+};
+
+inline constexpr glm::vec2 MSAA2[2] =
+{
+		{0.25f, 0.25f},
+		{0.75f, 0.75f}
+};
+
+inline constexpr glm::vec2 MSAA4[4] =
+{
+		{0.625f, 0.125f},
+		{0.125f, 0.375f},
+		{0.375f, 0.875f},
+		{0.875f, 0.625f}
+};
+
+inline constexpr glm::vec2 MSAA8[8] =
+{
+		{0.5625f, 0.1875f},
+		{0.0625f, 0.3125f},
+		{0.1875f, 0.9375f},
+		{0.3125f, 0.0625f},
+		{0.4375f, 0.5625f},
+		{0.6875f, 0.6875f},
+		{0.8125f, 0.4375f},
+		{0.9375f, 0.8125f}
+};
+
+inline constexpr glm::vec2 MSAA16[16] =
+{
+		{0.53125f, 0.03125f},
+		{0.59375f, 0.65625f},
+		{0.65625f, 0.90625f},
+		{0.71875f, 0.28125f},
+
+		{0.03125f, 0.34375f},
+		{0.09375f, 0.84375f},
+		{0.15625f, 0.09375f},
+		{0.21875f, 0.59375f},
+
+		{0.28125f, 0.96875f},
+		{0.34375f, 0.21875f},
+		{0.40625f, 0.71875f},
+		{0.46875f, 0.46875f},
+
+		{0.78125f, 0.53125f},
+		{0.84375f, 0.15625f},
+		{0.90625f, 0.78125f},
+		{0.96875f, 0.40625f}
+};
+
 namespace utility
 {
 	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far);
@@ -71,6 +135,8 @@ namespace utility
 	glm::mat4 viewport(float x, float y, float width, float height, float near = 0.0f, float far = 1.0f);
 
 	std::vector<std::string> split(std::string& line, char delimiter);
+
+	const glm::vec2* getMSAASamples(NumberOfSamples numberOfSamples);
 
 	template<typename T, typename T2, size_t dp>
 	class FixedPoint {

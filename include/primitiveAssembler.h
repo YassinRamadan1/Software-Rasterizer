@@ -1,7 +1,5 @@
 #pragma once
 #include "utility.h"
-
-#pragma once
 #include "clipper.h"
 
 namespace primitive_assembler
