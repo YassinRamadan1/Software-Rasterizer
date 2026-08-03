@@ -11,7 +11,6 @@ private:
 	float** m_DepthBuffer;
 	TGAColor m_FillColor;
 	TGAImage m_ColorBuffer;
-	glm::mat4 viewport;
 
 public:
 	FrameBuffer(int width, int height, glm::vec3 fillColor = glm::vec3(0.0f), float fillDepth = std::numeric_limits<float>::max());

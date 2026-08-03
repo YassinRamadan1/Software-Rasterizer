@@ -1,11 +1,9 @@
 #include "utility.h"
 
-namespace utility {
-
-	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far) {
-
-		float t = near * glm::tan(fovy / 2.0f), r = t * aspectRatio;
-
+namespace utility
+{
+	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far)
+	{
 		return glm::perspective(fovy, aspectRatio, near, far);
 	}
 
@@ -45,7 +43,10 @@ namespace utility {
 		}
 		return result;
 	}
+}
 
+namespace clr
+{
 	glm::vec3 toColor(TGAColor tgaColor)
 	{
 		glm::vec3 color;
@@ -63,5 +64,15 @@ namespace utility {
 		tgaColor[2] = static_cast<uint8_t>(std::clamp(color.r * 255.0f, 0.0f, 255.0f));
 		tgaColor[3] = 255;
 		return tgaColor;
+	}
+
+	glm::vec3 gammaUncorrect(glm::vec3 color, float gamma)
+	{
+		return glm::pow(color, glm::vec3(gamma));
+	}
+
+	glm::vec3 gammaCorrect(glm::vec3 color, float gamma)
+	{
+		return glm::pow(color, glm::vec3(1 / gamma));
 	}
 }

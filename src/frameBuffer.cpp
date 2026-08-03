@@ -1,11 +1,12 @@
 #include "FrameBuffer.h"
 
 FrameBuffer::FrameBuffer(int width, int height, glm::vec3 fillColor, float fillDepth)
-	: m_Width(width), m_Height(height), m_ColorBuffer(width, height, 4), m_FillDepth(fillDepth), m_FillColor(utility::toTGAColor(fillColor))
+	: m_Width(width), m_Height(height), m_ColorBuffer(width, height, 4), m_FillDepth(fillDepth), m_FillColor(clr::toTGAColor(fillColor))
 {
 	m_DepthBuffer = new float* [m_Width];
 
-	for (int i = 0; i < m_Width; ++i) {
+	for (int i = 0; i < m_Width; ++i)
+	{
 		m_DepthBuffer[i] = new float[m_Height];
 		for (int j = 0; j < m_Height; ++j)
 		{
@@ -17,12 +18,31 @@ FrameBuffer::FrameBuffer(int width, int height, glm::vec3 fillColor, float fillD
 
 bool FrameBuffer::loadColorBuffer(const std::string filename)
 {
-	return m_ColorBuffer.read_tga_file(filename);
+	bool answer = m_ColorBuffer.read_tga_file(filename);
+	if (!answer)
+		return false;
+
+	for (int i = 0; i < m_Width; ++i)
+	{
+		for (int j = 0; j < m_Height; ++j)
+		{
+			m_ColorBuffer.set(i, j, clr::toTGAColor(clr::gammaUncorrect(clr::toColor(m_ColorBuffer.get(i, j)), 2.2)));
+		}
+	}
+	return true;
 }
 
 bool FrameBuffer::storeColorBuffer(const std::string filename, const bool vflip, const bool rle)
 {
-	return m_ColorBuffer.write_tga_file(filename, vflip, rle);
+	TGAImage temp(m_Width, m_Height, 4);
+	for (int i = 0; i < m_Width; ++i)
+	{
+		for (int j = 0; j < m_Height; ++j)
+		{
+			temp.set(i, j, clr::toTGAColor(clr::gammaCorrect(clr::toColor(m_ColorBuffer.get(i, j)), 2.2)));
+		}
+	}
+	return temp.write_tga_file(filename, vflip, rle);
 }
 
 bool FrameBuffer::storeDepthBuffer(const std::string filename, const bool vflip, const bool rle)
@@ -55,7 +75,7 @@ void FrameBuffer::flipVertically()
 
 void FrameBuffer::setFillColor(glm::vec3 color)
 {
-	m_FillColor = utility::toTGAColor(color);
+	m_FillColor = clr::toTGAColor(color);
 }
 
 void FrameBuffer::setFillDepth(float depth)
@@ -65,12 +85,12 @@ void FrameBuffer::setFillDepth(float depth)
 
 void FrameBuffer::setPixelColor(int i, int j, glm::vec3 color)
 {
-	m_ColorBuffer.set(i, j, utility::toTGAColor(color));
+	m_ColorBuffer.set(i, j, clr::toTGAColor(color));
 }
 
 glm::vec3 FrameBuffer::getPixelColor(int i, int j) const
 {
-	return utility::toColor(m_ColorBuffer.get(i, j));
+	return clr::toColor(m_ColorBuffer.get(i, j));
 }
 
 void FrameBuffer::setPixelDepth(int i, int j, float depth)

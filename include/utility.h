@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <glm/glm.hpp>
+#include <glm/exponential.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -16,39 +17,34 @@
 
 #include "tgaimage.h"
 
-enum class RenderMode {
+enum class RenderMode
+{
 	WIREFRAME,
 	SOLID
 };
 
-enum class ProjectionMode {
-	PERSPECTIVE,
-	ORTHOGRAPHIC
-};
-
-enum class AttributeMode {
-	COLOR,
-	TEXTURE
-};
-
-enum class WrapMode {
+enum class WrapMode
+{
 	REPEAT,
 	MIRROR,
 	CLAMP
 };
 
-enum class FilterMode {
+enum class FilterMode
+{
 	NEAREST,
 	BILINEAR,
 	TRILINEAR
 };
 
-enum class BUFFER_TYPE {
+enum class BUFFER_TYPE
+{
 	DEPTH_BUFFER,
 	COLOR_BUFFER
 };
 
-struct Face {
+struct Face
+{
 	glm::ivec3 position;
 	glm::ivec3 textureCoord;
 	glm::ivec3 color;
@@ -56,7 +52,8 @@ struct Face {
 	Face() = default;
 };
 
-struct Triangle {
+struct Triangle
+{
 	glm::vec4 position[3];
 	glm::vec3 textureCoord[3];
 	glm::vec3 color[3];
@@ -67,16 +64,6 @@ struct Triangle {
 
 namespace utility
 {
-	const float EPSILON = 1e-5;
-	const float YAW = -90.0f;
-	const float PITCH = 0.0f;
-	const float SENSITIVITY = 1.0f;
-	const float SPEED = 2.5f;
-	const float ZOOM = 45.0f;
-	enum Camera_Movement {
-		FORWARD, BACKWARD, LEFT, RIGHT
-	};
-
 	glm::mat4 perspectiveProjection(float fovy, float aspectRatio, float near, float far);
 
 	glm::mat4 orthographicProjection(float fovy, float aspectRatio, float near, float far);
@@ -84,78 +71,6 @@ namespace utility
 	glm::mat4 viewport(float x, float y, float width, float height, float near = 0.0f, float far = 1.0f);
 
 	std::vector<std::string> split(std::string& line, char delimiter);
-
-	class Camera {
-	public:
-
-		glm::vec3 m_Position;
-		glm::vec3 m_Front;
-		glm::vec3 m_Up;
-		glm::vec3 m_Right;
-		glm::vec3 m_WorldUp;
-
-		float m_Speed;
-		float m_Sensitivity;
-		float m_Zoom;
-		float m_Yaw;
-		float m_Pitch;
-
-		Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_Speed(SPEED), m_Sensitivity(SENSITIVITY), m_Zoom(ZOOM) {
-			m_Position = position;
-			m_WorldUp = up;
-			m_Yaw = yaw;
-			m_Pitch = pitch;
-			UpdateCameraVectors();
-		}
-
-		void processKeyboard(Camera_Movement direction) {
-
-			float velocity = m_Speed;
-
-			if (direction == FORWARD)
-				m_Position += velocity * m_Front;
-			if (direction == BACKWARD)
-				m_Position -= velocity * m_Front;
-			if (direction == LEFT)
-				m_Position -= velocity * m_Right;
-			if (direction == RIGHT)
-				m_Position += velocity * m_Right;
-		}
-
-		void processMouseMovement(float xOffset, float yOffset) {
-
-			xOffset *= m_Sensitivity;
-			yOffset *= m_Sensitivity;
-			m_Yaw += xOffset;
-			m_Pitch += yOffset;
-			m_Pitch = m_Pitch > 89.0f ? 89.0f : m_Pitch < -89.0f ? -89.0f : m_Pitch;
-			UpdateCameraVectors();
-		}
-
-		glm::mat4 getViewMatrix() {
-
-			glm::vec3 forward = glm::normalize(-m_Front);
-			glm::vec3 right = glm::normalize(glm::cross(m_WorldUp, forward));
-			glm::vec3 up = glm::cross(forward, right);
-
-			return  glm::transpose(glm::mat4(glm::vec4(right, 0.0f),
-				glm::vec4(up, 0.0f),
-				glm::vec4(forward, 0.0f),
-				glm::vec4(0.0f, 0.0f, 0.0f, 1.0f))) * glm::translate(glm::mat4(1.0f), -m_Position);
-		}
-
-	private:
-
-		void UpdateCameraVectors() {
-
-			m_Front.x = cos(glm::radians(m_Pitch)) * cos(glm::radians(m_Yaw));
-			m_Front.y = sin(glm::radians(m_Pitch));
-			m_Front.z = cos(glm::radians(m_Pitch)) * sin(glm::radians(m_Yaw));
-			m_Front = glm::normalize(m_Front);
-			m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
-			m_Up = glm::cross(m_Right, m_Front);
-		}
-	};
 
 	template<typename T, typename T2, size_t dp>
 	class FixedPoint {
@@ -415,12 +330,19 @@ namespace utility
 
 		return (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
 	}
-
-	glm::vec3 toColor(TGAColor tgaColor);
-
-	TGAColor toTGAColor(glm::vec3 color);
 }
 
 using fp15_16 = utility::FixedPoint<int32_t, int64_t, 16>;
 using fp22_9 = utility::FixedPoint<int32_t, int64_t, 9>;
 using fp46_16 = utility::FixedPoint<int64_t, int64_t, 16>;
+
+namespace clr
+{
+	glm::vec3 toColor(TGAColor tgaColor);
+
+	TGAColor toTGAColor(glm::vec3 color);
+
+	glm::vec3 gammaUncorrect(glm::vec3 color, float gamma);
+
+	glm::vec3 gammaCorrect(glm::vec3 color, float gamma);
+}

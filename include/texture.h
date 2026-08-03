@@ -11,9 +11,9 @@ private:
 	WrapMode m_WrapModeV;
 
 public:
-	Texture(std::string texturePath);
+	Texture(std::string texturePath, FilterMode filterMode = FilterMode::TRILINEAR, WrapMode wrapModeU = WrapMode::REPEAT, WrapMode wrapModeV = WrapMode::REPEAT, bool vflip = true);
 
-	Texture(TGAImage texture);
+	Texture(TGAImage texture, FilterMode filterMode = FilterMode::TRILINEAR, WrapMode wrapModeU = WrapMode::REPEAT, WrapMode wrapModeV = WrapMode::REPEAT);
 
 	glm::vec3 getTexel(float u, float v, float level) const;
 
@@ -27,11 +27,11 @@ public:
 
 	int getTextureHeight(int level) const;
 
-	void Texture::addTexture(std::string texturePath, int level);
+	void Texture::addTexture(std::string texturePath, int level, bool vflip = true);
 
 	void Texture::addTexture(TGAImage texture, int level);
 
-	void updateTexture(std::string texturePath);
+	void updateTexture(std::string texturePath, bool vflip = true);
 
 	void updateTexture(TGAImage texture);
 

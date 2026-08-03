@@ -2,17 +2,9 @@
 
 void Rasterizer::draw(const std::vector<Triangle>& triangles, const Texture& texture, FrameBuffer& frameBuffer)
 {
-    switch (m_RenderMode)
+    for (const auto& triangle : triangles)
     {
-    case RenderMode::WIREFRAME:
-        //drawWireframe();
-        break;
-    case RenderMode::SOLID:
-        for (const auto& triangle : triangles)
-        {
-            drawTextured(triangle, texture, frameBuffer);
-        }
-        break;
+        drawTriangleTextured(triangle, texture, frameBuffer);
     }
 }
 
@@ -21,12 +13,16 @@ void Rasterizer::draw(const std::vector<Triangle>& triangles, FrameBuffer& frame
     switch (m_RenderMode)
     {
     case RenderMode::WIREFRAME:
-        //drawWireframe();
+        for (const auto& triangle : triangles)
+        {
+            drawTriangleWireFramed(triangle.position[0], triangle.position[1], triangle.position[2],
+                triangle.color[0], triangle.color[1], triangle.color[2], frameBuffer);
+        }
         break;
     case RenderMode::SOLID:
         for (const auto& triangle : triangles)
         {
-            drawColored(triangle, frameBuffer);
+            drawTriangleColored(triangle, frameBuffer);
         }
         break;
     }
@@ -35,6 +31,14 @@ void Rasterizer::draw(const std::vector<Triangle>& triangles, FrameBuffer& frame
 float Rasterizer::getDistanceFromLine(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1)
 {
     return ((p0.y - p1.y) * point.x + (p1.x - p0.x) * point.y + p0.x * p1.y - p0.y * p1.x);
+}
+
+glm::vec2 Rasterizer::getBarycentricCoords(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1)
+{
+    glm::vec2 coords;
+    coords.y = (point.x - p0.x) / (p1.x - p0.x);
+    coords.x = 1 - coords.y;
+    return coords;
 }
 
 glm::vec3 Rasterizer::getBarycentricCoords(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& p2)
@@ -47,7 +51,7 @@ glm::vec3 Rasterizer::getBarycentricCoords(glm::vec2 point, const glm::vec2& p0,
     return barycentricCoords;
 }
 
-void Rasterizer::drawTextured(const Triangle& triangle, const Texture& texture, FrameBuffer& frameBuffer)
+void Rasterizer::drawTriangleTextured(const Triangle& triangle, const Texture& texture, FrameBuffer& frameBuffer)
 {
     const glm::vec4& p0 = triangle.position[0];
     const glm::vec4& p1 = triangle.position[1];
@@ -67,14 +71,16 @@ void Rasterizer::drawTextured(const Triangle& triangle, const Texture& texture, 
         glm::vec2 pixelCenter(i + 0.5, j + 0.5);
         glm::vec3 barycentric = getBarycentricCoords(pixelCenter, glm::vec2(p0), glm::vec2(p1), glm::vec2(p2));
 
-        if (!(barycentric.x >= 0. && barycentric.y >= 0. && barycentric.z >= 0.))
-            passed = false;
-
-        float zScreen = glm::dot(glm::vec3(p0.z, p1.z, p2.z), barycentric);
-        if (zScreen < frameBuffer.getPixelDepth(i, j))
-            frameBuffer.setPixelDepth(i, j, zScreen);
+        if (barycentric.x >= 0. && barycentric.y >= 0. && barycentric.z >= 0.)
+        {
+            float zScreen = glm::dot(glm::vec3(p0.z, p1.z, p2.z), barycentric);
+            if (zScreen < frameBuffer.getPixelDepth(i, j))
+                frameBuffer.setPixelDepth(i, j, zScreen);
+            else
+                passed = 0;
+        }
         else
-            passed = false;
+            passed = 0;
 
         glm::vec3 inverseW(1 / p0.w, 1 / p1.w, 1 / p2.w);
         float z = 1. / glm::dot(inverseW, barycentric);
@@ -82,7 +88,7 @@ void Rasterizer::drawTextured(const Triangle& triangle, const Texture& texture, 
         glm::vec3 barycentricCorrected(z * inverseW.x * barycentric.x, z * inverseW.y * barycentric.y, 0.);
         barycentricCorrected.z = 1 - barycentricCorrected.x - barycentricCorrected.y;
 
-        glm::vec2 textureCoords(glm::dot(glm::vec3(t0.x, t1.x, t2.x), barycentricCorrected), glm::dot(glm::vec3(t0.y, t1.y, t2.y), barycentricCorrected));
+        glm::vec2 textureCoords = barycentricCorrected.x * t0 + barycentricCorrected.y * t1 + barycentricCorrected.z * t2;
 
         return textureCoords;
     };
@@ -102,7 +108,7 @@ void Rasterizer::drawTextured(const Triangle& triangle, const Texture& texture, 
             float mipmapLevel;
             if (passed[0])
             {
-                mipmapLevel= texture.getMipmapLevel(tex00, tex10, tex01);
+                mipmapLevel = texture.getMipmapLevel(tex00, tex10, tex01);
                 frameBuffer.setPixelColor(i, j, texture.getTexel(tex00.x, tex00.y, mipmapLevel));
             }
 
@@ -127,7 +133,7 @@ void Rasterizer::drawTextured(const Triangle& triangle, const Texture& texture, 
     }
 }
 
-void Rasterizer::drawColored(const Triangle& triangle, FrameBuffer& frameBuffer)
+void Rasterizer::drawTriangleColored(const Triangle& triangle, FrameBuffer& frameBuffer)
 {
     const glm::vec4& p0 = triangle.position[0];
     const glm::vec4& p1 = triangle.position[1];
@@ -149,7 +155,7 @@ void Rasterizer::drawColored(const Triangle& triangle, FrameBuffer& frameBuffer)
 
             if (!(barycentric.x >= 0. && barycentric.y >= 0. && barycentric.z >= 0.))
             {
-                passed = false;
+                passed = 0;
                 return {};
             }
 
@@ -158,7 +164,7 @@ void Rasterizer::drawColored(const Triangle& triangle, FrameBuffer& frameBuffer)
                 frameBuffer.setPixelDepth(i, j, zScreen);
             else
             {
-                passed = false;
+                passed = 0;
                 return {};
             }
 
@@ -168,8 +174,7 @@ void Rasterizer::drawColored(const Triangle& triangle, FrameBuffer& frameBuffer)
             glm::vec3 barycentricCorrected(z * inverseW.x * barycentric.x, z * inverseW.y * barycentric.y, 0.);
             barycentricCorrected.z = 1 - barycentricCorrected.x - barycentricCorrected.y;
 
-            glm::vec3 colors(glm::dot(glm::vec3(c0.r, c1.r, c2.r), barycentricCorrected),
-                glm::dot(glm::vec3(c0.g, c1.g, c2.g), barycentricCorrected), glm::dot(glm::vec3(c0.b, c1.b, c2.b), barycentricCorrected));
+            glm::vec3 colors = barycentricCorrected.x * c0 + barycentricCorrected.y * c1 + barycentricCorrected.z * c2;
 
             return colors;
         };
@@ -225,66 +230,102 @@ bool Drawer::isTopLeftEdge(utility::vec2<fp46_16> v0, utility::vec2<fp46_16> v1)
     // is it a Flat and a Top Edge from v0 to v1 ----- is it a Left Edge from v0 to v1
     return ((v1.y - v0.y == 0 && v1.x - v0.x < 0) || (v1.y < v0.y));
 }
+*/
 
-void Drawer::drawLine(glm::ivec2 v1, glm::ivec2 v2, TGAImage& framebuffer, TGAColor c) {
-
+void Rasterizer::drawLine(glm::vec4 p0, glm::vec4 p1, glm::vec3 c0, glm::vec3 c1, FrameBuffer& framebuffer)
+{
     bool isTransposed = false;
-    if (abs(v2.x - v1.x) < abs(v2.y - v1.y)) { // transpose 
-        std::swap(v1.x, v1.y);
-        std::swap(v2.x, v2.y);
+    if (abs(p1.x - p0.x) < abs(p1.y - p0.y)) // transpose
+    {  
+        std::swap(p0.x, p0.y);
+        std::swap(p1.x, p1.y);
         isTransposed = true;
     }
-    if (v2.x - v1.x < 0) { // draw from left to right
-        std::swap(v1.x, v2.x);
-        std::swap(v1.y, v2.y);
+    if (p1.x - p0.x < 0) // draw from left to right
+    {
+        std::swap(p0, p1);
+        std::swap(c0, c1);
     }
 
-    int dx = v2.x - v1.x, dy = v2.y - v1.y, x = v1.x, y = v1.y;
+    glm::vec2 p(glm::floor(p0));
+    c0 /= p0.w, c1 /= p1.w;
+    glm::vec3 c;
+    glm::vec2 barycentric;
 
-    if (isTransposed)
-        framebuffer.set(y, x, c);
-    else
-        framebuffer.set(x, y, c);
-
-    if (dy < 0) {
-
-        int d = -dx - 2 * dy, d1 = -2 * dy, d2 = -2 * (dx + dy);
-
-        while (x < v2.x) {
-            x++;
-            if (d < 0)
-                d += d1;
-            else
-                y--, d += d2;
+    auto f = [&](glm::vec2 p)
+        {
             if (isTransposed)
-                framebuffer.set(y, x, c);
-            else
-                framebuffer.set(x, y, c);
-        }
-    }
-    else {
+            {
+                if (!(p.x < framebuffer.getHeight() && p.y < framebuffer.getWidth() && p.x >= 0 && p.y >= 0))
+                    return;
+                barycentric = getBarycentricCoords(p, p0, p1);
+                float zScreen = glm::dot(glm::vec2(p0.z, p1.z), barycentric);
+                if (zScreen < framebuffer.getPixelDepth(p.y, p.x))
+                {
+                    framebuffer.setPixelDepth(p.y, p.x, zScreen);
 
-        int d = dx - 2 * dy, d1 = -2 * dy, d2 = 2 * (dx - dy);
-        while (x < v2.x) {
-            x++;
+                    float z = 1 / glm::dot(glm::vec2(1 / p0.w, 1 / p1.w), barycentric);
+                    c = z * (barycentric.x * c0 + barycentric.y * c1);
+
+                    framebuffer.setPixelColor(p.y, p.x, c);
+                }
+            }
+            else
+            {
+                if (!(p.x < framebuffer.getWidth() && p.y < framebuffer.getHeight() && p.x >= 0 && p.y >= 0))
+                    return;
+                barycentric = getBarycentricCoords(p, p0, p1);
+                float zScreen = glm::dot(glm::vec2(p0.z, p1.z), barycentric);
+                if (zScreen < framebuffer.getPixelDepth(p.x, p.y))
+                {
+                    framebuffer.setPixelDepth(p.x, p.y, zScreen);
+                    float z = 1 / glm::dot(glm::vec2(1 / p0.w, 1 / p1.w), barycentric);
+                    c = z * (barycentric.x * c0 + barycentric.y * c1);
+
+                    framebuffer.setPixelColor(p.x, p.y, c);
+                }
+            }
+        };
+
+    f(p + glm::vec2(0.5));
+    if (p1.y - p0.y >= 0)
+    {
+        while (p.x <= p1.x)
+        {
+            float d = getDistanceFromLine(p + glm::vec2(1.5, 1), p0, p1);
             if (d > 0)
-                d += d1;
+                f(p + glm::vec2(1.5, 0.5));
             else
-                y++, d += d2;
-            if (isTransposed)
-                framebuffer.set(y, x, c);
+            {
+                f(p + glm::vec2(1.5));
+                ++p.y;
+            }
+            ++p.x;
+        }
+    }
+    else
+    {
+        while (p.x <= p1.x)
+        {
+            float d = getDistanceFromLine(p + glm::vec2(1.5, 0.), p0, p1);
+            if (d > 0)
+            {
+                f(p + glm::vec2(1.5, -0.5));
+                --p.y;
+            }
             else
-                framebuffer.set(x, y, c);
+                f(p + glm::vec2(1.5, 0.5));
+            ++p.x;
         }
     }
 }
-void Drawer::drawTriangleWireFrame(glm::ivec2 v1, glm::ivec2 v2, glm::ivec2 v3, TGAImage& framebuffer, TGAColor c) {
 
-    drawLine(v1, v2, framebuffer, c);
-    drawLine(v2, v3, framebuffer, c);
-    drawLine(v3, v1, framebuffer, c);
+void Rasterizer::drawTriangleWireFramed(const glm::vec4& p0, const glm::vec4& p1, const glm::vec4& p2, const glm::vec3& c0, const glm::vec3& c1, const glm::vec3& c2, FrameBuffer& framebuffer)
+{
+    drawLine(p0, p1, c0, c1, framebuffer);
+    drawLine(p1, p2, c1, c2, framebuffer);
+    drawLine(p2, p0, c2, c0, framebuffer);
 }
-*/
 
 void Rasterizer::setRenderMode(RenderMode renderMode)
 {

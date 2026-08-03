@@ -29,7 +29,7 @@ Mesh::Mesh(std::string location) {
 			element[0] = std::stof(tokens[1]);
 			element[1] = std::stof(tokens[2]);
 			element[2] = std::stof(tokens[3]);
-			m_Vertices.push_back(element);
+			vertices.push_back(element);
 		}
 		else if (tokens[0] == "f") {
 
@@ -39,9 +39,10 @@ Mesh::Mesh(std::string location) {
 				temp = utility::split(tokens[i], '/');
 				f.position[i - 1] = std::stoi(temp[0]) - 1;
 				f.textureCoord[i - 1] = std::stoi(temp[1]) - 1;
+				f.color[i - 1] = f.textureCoord[i - 1];
 				f.normal[i - 1] = std::stoi(temp[2]) - 1;
 			}
-			m_Faces.push_back(f);
+			faces.push_back(f);
 		}
 		else if (tokens[0] == "vt") {
 
@@ -50,14 +51,14 @@ Mesh::Mesh(std::string location) {
 			// to ensure it doesn't go out of bound if the texture has 2 coordinates only
 			for (int i = 1; i < tokens.size(); i++)
 				element[i - 1] = std::stof(tokens[i]);
-			m_TextureCoords.push_back(element);
+			textureCoords.push_back(element);
 		}
 		else if (tokens[0] == "vn") {
 
 			element[0] = std::stof(tokens[1]);
 			element[1] = std::stof(tokens[2]);
 			element[2] = std::stof(tokens[3]);
-			m_Normals.push_back(element);
+			normals.push_back(element);
 		}
 	}
 	file.close();

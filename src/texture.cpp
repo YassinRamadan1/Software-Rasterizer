@@ -1,19 +1,35 @@
 #include "texture.h"
 
-Texture::Texture(std::string texturePath)
+Texture::Texture(std::string texturePath, FilterMode filterMode, WrapMode wrapModeU, WrapMode wrapModeV, bool vflip)
 {
 	m_Texture.resize(1);
 	m_Texture[0].read_tga_file(texturePath);
+	if (vflip)
+		m_Texture[0].flip_vertically();
+	for (int i = 0; i < m_Texture[0].width(); ++i)
+	{
+		for (int j = 0; j < m_Texture[0].height(); ++j)
+		{
+			m_Texture[0].set(i, j, clr::toTGAColor(clr::gammaUncorrect(clr::toColor(m_Texture[0].get(i, j)), 2.2)));
+		}
+	}
+	m_WrapModeU = wrapModeU;
+	m_WrapModeV = wrapModeV;
+	m_FilterMode = filterMode;
 }
 
-Texture::Texture(TGAImage texture)
+Texture::Texture(TGAImage texture, FilterMode filterMode, WrapMode wrapModeU, WrapMode wrapModeV)
 {
 	m_Texture.emplace_back(std::move(texture));
+	m_WrapModeU = wrapModeU;
+	m_WrapModeV = wrapModeV;
+	m_FilterMode = filterMode;
 }
 
 glm::vec3 Texture::getTexel(float u, float v, float level) const
 {
-	switch (m_WrapModeU) {
+	switch (m_WrapModeU)
+	{
 	case WrapMode::REPEAT:
 		u = repeat(u);
 		break;
@@ -25,7 +41,8 @@ glm::vec3 Texture::getTexel(float u, float v, float level) const
 		break;
 	}
 
-	switch (m_WrapModeV) {
+	switch (m_WrapModeV)
+	{
 	case WrapMode::REPEAT:
 		v = repeat(v);
 		break;
@@ -39,7 +56,8 @@ glm::vec3 Texture::getTexel(float u, float v, float level) const
 
 	level = std::clamp(level, 0.0f, float(m_Texture.size() - 1));
 
-	switch (m_FilterMode) {
+	switch (m_FilterMode)
+	{
 	case FilterMode::NEAREST:
 		return nearestFilter(u, v, int(level + 0.5));
 	case FilterMode::BILINEAR:
@@ -63,9 +81,7 @@ float Texture::getMipmapLevel(glm::vec2 tex00, glm::vec2 tex10, glm::vec2 tex01)
 
 	l = std::log2(l) / 2.0;
 
-	if (l >= m_Texture.size())
-		return m_Texture.size() - 1;
-	return l;
+	return std::max(0.f, std::min(l, m_Texture.size() - 1.f));
 }
 
 void Texture::generateMipmaps()
@@ -79,25 +95,25 @@ void Texture::generateMipmaps()
 		for (int j = 0; j < width / 2; ++j)
 			for (int k = 0; k < height / 2; ++k)
 			{
-				c = utility::toColor(m_Texture[i - 1].get(2 * j, 2 * k)) +
-					utility::toColor(m_Texture[i - 1].get(2 * j + 1, 2 * k)) +
-					utility::toColor(m_Texture[i - 1].get(2 * j, 2 * k + 1)) +
-					utility::toColor(m_Texture[i - 1].get(2 * j + 1, 2 * k + 1));
+				c = clr::toColor(m_Texture[i - 1].get(2 * j, 2 * k)) +
+					clr::toColor(m_Texture[i - 1].get(2 * j + 1, 2 * k)) +
+					clr::toColor(m_Texture[i - 1].get(2 * j, 2 * k + 1)) +
+					clr::toColor(m_Texture[i - 1].get(2 * j + 1, 2 * k + 1));
 				c *= 0.25;
-				m_Texture[i].set(j, k, utility::toTGAColor(c));
+				m_Texture[i].set(j, k, clr::toTGAColor(c));
 			}
 
 		if (width % 2)
 		{
 			for (int k = 0; k < height / 2; ++k)
 			{
-				c = utility::toColor(m_Texture[i - 1].get(width - 2, 2 * k)) +
-					utility::toColor(m_Texture[i - 1].get(width - 1, 2 * k)) +
-					utility::toColor(m_Texture[i - 1].get(width - 2, 2 * k + 1)) +
-					utility::toColor(m_Texture[i - 1].get(width - 1, 2 * k + 1));
+				c = clr::toColor(m_Texture[i - 1].get(width - 2, 2 * k)) +
+					clr::toColor(m_Texture[i - 1].get(width - 1, 2 * k)) +
+					clr::toColor(m_Texture[i - 1].get(width - 2, 2 * k + 1)) +
+					clr::toColor(m_Texture[i - 1].get(width - 1, 2 * k + 1));
 				c *= 0.25f;
 
-				m_Texture[i].set(width / 2, k, utility::toTGAColor(c));
+				m_Texture[i].set(width / 2, k, clr::toTGAColor(c));
 			}
 		}
 
@@ -105,25 +121,25 @@ void Texture::generateMipmaps()
 		{
 			for (int j = 0; j < width / 2; j++)
 			{
-				c = utility::toColor(m_Texture[i - 1].get(2 * j, height - 2)) +
-					utility::toColor(m_Texture[i - 1].get(2 * j + 1, height - 2)) +
-					utility::toColor(m_Texture[i - 1].get(2 * j, height - 1)) +
-					utility::toColor(m_Texture[i - 1].get(2 * j + 1, height - 1));
+				c = clr::toColor(m_Texture[i - 1].get(2 * j, height - 2)) +
+					clr::toColor(m_Texture[i - 1].get(2 * j + 1, height - 2)) +
+					clr::toColor(m_Texture[i - 1].get(2 * j, height - 1)) +
+					clr::toColor(m_Texture[i - 1].get(2 * j + 1, height - 1));
 				c *= 0.25f;
 
-				m_Texture[i].set(j, height / 2, utility::toTGAColor(c));
+				m_Texture[i].set(j, height / 2, clr::toTGAColor(c));
 			}
 		}
 
 		if (width % 2 && height % 2)
 		{
-			c = utility::toColor(m_Texture[i - 1].get(width - 2, height - 2)) +
-				utility::toColor(m_Texture[i - 1].get(width - 1, height - 2)) +
-				utility::toColor(m_Texture[i - 1].get(width - 2, height - 1)) +
-				utility::toColor(m_Texture[i - 1].get(width - 1, height - 1));
+			c = clr::toColor(m_Texture[i - 1].get(width - 2, height - 2)) +
+				clr::toColor(m_Texture[i - 1].get(width - 1, height - 2)) +
+				clr::toColor(m_Texture[i - 1].get(width - 2, height - 1)) +
+				clr::toColor(m_Texture[i - 1].get(width - 1, height - 1));
 			c *= 0.25f;
 
-			m_Texture[i].set(width / 2, height / 2, utility::toTGAColor(c));
+			m_Texture[i].set(width / 2, height / 2, clr::toTGAColor(c));
 		}
 
 		width = (width + 1) / 2, height = (height + 1) / 2;
@@ -136,7 +152,15 @@ void Texture::storeMipmaps(std::string mipmapName)
 {
 	for (int i = 0; i < m_Texture.size(); ++i)
 	{
-		m_Texture[i].write_tga_file(RESOURCES_PATH + mipmapName + std::to_string(i));
+		TGAImage temp(m_Texture[i].width(), m_Texture[i].height(), 4);
+		for (int j = 0; j < m_Texture[i].width(); ++j)
+		{
+			for (int k = 0; k < m_Texture[i].height(); ++k)
+			{
+				temp.set(j, k, clr::toTGAColor(clr::gammaCorrect(clr::toColor(m_Texture[i].get(j, k)), 2.2)));
+			}
+		}
+		temp.write_tga_file(RESOURCES_PATH + mipmapName + std::to_string(i));
 	}
 }
 
@@ -150,10 +174,10 @@ glm::vec3 Texture::bilinearFilter(float u, float v, int level) const
 	float fractionU = u - (x1 + 0.5);
 	float fractionV = v - (y1 + 0.5);
 
-	glm::vec3 color1(utility::toColor(m_Texture[level].get(x1, y1)));
-	glm::vec3 color2(utility::toColor(m_Texture[level].get(x1 + 1, y1)));
-	glm::vec3 color3(utility::toColor(m_Texture[level].get(x1, y1 + 1)));
-	glm::vec3 color4(utility::toColor(m_Texture[level].get(x1 + 1, y1 + 1)));
+	glm::vec3 color1(clr::toColor(m_Texture[level].get(x1, y1)));
+	glm::vec3 color2(clr::toColor(m_Texture[level].get(x1 + 1, y1)));
+	glm::vec3 color3(clr::toColor(m_Texture[level].get(x1, y1 + 1)));
+	glm::vec3 color4(clr::toColor(m_Texture[level].get(x1 + 1, y1 + 1)));
 
 	color2 = (1 - fractionU) * color1  + fractionU * color2;
 
@@ -185,7 +209,7 @@ glm::vec3 Texture::nearestFilter(float u, float v, int level) const
 	u *= m_Texture[level].width();
 	v *= m_Texture[level].height();
 
-	return utility::toColor(m_Texture[level].get(int(u), int(v)));
+	return clr::toColor(m_Texture[level].get(int(u), int(v)));
 }
 
 float Texture::repeat(float u) const
@@ -219,7 +243,7 @@ int Texture::getTextureHeight(int level) const
 	return m_Texture[level].height();
 }
 
-void Texture::addTexture(std::string texturePath, int level)
+void Texture::addTexture(std::string texturePath, int level, bool vflip)
 {
 	if (level > m_Texture.size())
 	{
@@ -228,6 +252,8 @@ void Texture::addTexture(std::string texturePath, int level)
 	}
 	TGAImage texture;
 	texture.read_tga_file(texturePath);
+	if (vflip)
+		texture.flip_vertically();
 	if (level == m_Texture.size())
 		m_Texture.emplace_back(std::move(texture));
 	m_Texture[level] = std::move(texture);
@@ -245,10 +271,12 @@ void Texture::addTexture(TGAImage texture, int level)
 	m_Texture[level] = std::move(texture);
 }
 
-void Texture::updateTexture(std::string texturePath)
+void Texture::updateTexture(std::string texturePath, bool vflip)
 {
 	m_Texture.resize(1);
 	m_Texture[0].read_tga_file(texturePath);
+	if (vflip)
+		m_Texture[0].flip_vertically();
 }
 
 void Texture::updateTexture(TGAImage texture)

@@ -9,34 +9,20 @@ private:
     RenderMode m_RenderMode;
     /*
     bool isTopLeftEdge(utility::vec2<fp46_16> v0, utility::vec2<fp46_16> v1);
-
-    void drawSolidOrthoTexture();
-
-    void drawSolid1(Triangle& triangle);
-
-    void drawSolidPerspectiveTexture();
-
-    void drawSolid2(Triangle& triangle);
-
-    void drawSolidPerspectiveColor();
-
-    void drawSolid3(Triangle& triangle);
-
-    void drawSolidOrthoColor();
-
-    void drawSolid4(Triangle& triangle);
-
-    void drawLine(glm::ivec2 v1, glm::ivec2 v2, TGAImage& framebuffer, TGAColor c);
-
-    void drawTriangleWireFrame(glm::ivec2 v1, glm::ivec2 v2, glm::ivec2 v3, TGAImage& framebuffer, TGAColor c);
     */
+    void drawLine(glm::vec4 p0, glm::vec4 p1, glm::vec3 c0, glm::vec3 c1, FrameBuffer& framebuffer);
+
+    void drawTriangleWireFramed(const glm::vec4& p0, const glm::vec4& p1, const glm::vec4& p2, const glm::vec3& c0, const glm::vec3& c1, const glm::vec3& c2, FrameBuffer& framebuffer);
+    
     float getDistanceFromLine(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1);
     
+    glm::vec2 getBarycentricCoords(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1);
+
     glm::vec3 getBarycentricCoords(glm::vec2 point, const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& p2);
 
-    void drawTextured(const Triangle& triangle, const Texture& texture, FrameBuffer& frameBuffer);
+    void drawTriangleTextured(const Triangle& triangle, const Texture& texture, FrameBuffer& frameBuffer);
 
-    void drawColored(const Triangle& triangle, FrameBuffer& frameBuffer);
+    void drawTriangleColored(const Triangle& triangle, FrameBuffer& frameBuffer);
 
 public:
     void draw(const std::vector<Triangle>& triangles, const Texture& texture, FrameBuffer& frameBuffer);

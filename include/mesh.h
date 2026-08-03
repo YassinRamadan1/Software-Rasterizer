@@ -11,10 +11,10 @@ class Mesh {
 
 public:
 
-	std::vector<glm::vec4> m_Vertices;
-	std::vector<glm::vec3> m_TextureCoords;
-	std::vector<glm::vec3> m_Normals;
-	std::vector<Face> m_Faces;
+	std::vector<glm::vec4> vertices;
+	std::vector<glm::vec3> textureCoords;
+	std::vector<glm::vec3> normals;
+	std::vector<Face> faces;
 
 	Mesh(std::string location);
 };

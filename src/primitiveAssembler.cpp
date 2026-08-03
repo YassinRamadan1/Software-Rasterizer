@@ -29,7 +29,7 @@ namespace primitive_assembler
                 {
                     w = -vertex.w;
     
-                    vertex /= w;
+                    vertex /= vertex.w;
                     vertex = viewport * vertex;
     
                     vertex.w = w;
