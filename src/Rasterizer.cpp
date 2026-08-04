@@ -1,7 +1,13 @@
 #include "rasterizer.h"
+#include <execution>
+
+#define MT 1
 
 void Rasterizer::draw(const std::vector<Triangle>& triangles, const Texture& texture, FrameBuffer& frameBuffer)
 {
+    m_VerticalIterator.resize((frameBuffer.getHeight() + 1) / 2);
+    for (int i = 0; i < (frameBuffer.getHeight() + 1) / 2; ++i)
+        m_VerticalIterator[i] = 2 * i;
     for (const auto& triangle : triangles)
     {
         drawTriangleTextured(triangle, texture, frameBuffer);
@@ -20,6 +26,10 @@ void Rasterizer::draw(const std::vector<Triangle>& triangles, FrameBuffer& frame
         }
         break;
     case RenderMode::SOLID:
+        m_VerticalIterator.resize((frameBuffer.getHeight() + 1) / 2);
+        for (int i = 0; i < (frameBuffer.getHeight() + 1) / 2; ++i)
+            m_VerticalIterator[i] = 2 * i;
+
         for (const auto& triangle : triangles)
         {
             drawTriangleColored(triangle, frameBuffer);
@@ -75,6 +85,10 @@ void Rasterizer::drawTriangleTextured(const Triangle& triangle, const Texture& t
     int xmax = std::min(frameBuffer.getWidth() - 1.0f, ceil(std::max({ p0.x, p1.x, p2.x })));
     int ymax = std::min(frameBuffer.getHeight() - 1.0f, ceil(std::max({ p0.y, p1.y, p2.y })));
 
+// eleminate the triangle that's entirely off screen
+    if (xmax < xmin || ymax < ymin)
+        return;
+
     auto getTextureCoords = [&](int i, int j) -> glm::vec2
     {
         glm::vec2 pixelCenter(i + 0.5, j + 0.5);
@@ -113,6 +127,46 @@ void Rasterizer::drawTriangleTextured(const Triangle& triangle, const Texture& t
         }
     };
 
+#if MT
+    std::for_each(std::execution::par, m_VerticalIterator.begin() + ymin / 2, m_VerticalIterator.begin() + ymax / 2 + 1,
+        [&](int j) {
+            
+            for (int i = xmin; i < xmax + 1; i += 2)
+            {
+                int ni = std::min(i + 1, xmax);
+                int nj = std::min(j + 1, ymax);
+                glm::vec2 tex00, tex10, tex01, tex11;
+                tex00 = getTextureCoords(i, j);
+                tex10 = getTextureCoords(ni, j);
+                tex01 = getTextureCoords(i, nj);
+                tex11 = getTextureCoords(ni, nj);
+
+                float mipmapLevel;
+
+                mipmapLevel = texture.getMipmapLevel(tex00, tex10, tex01);
+                colorSamples(i, j, texture.getTexel(tex00.x, tex00.y, mipmapLevel));
+
+                if (ni != i)
+                {
+                    mipmapLevel = texture.getMipmapLevel(tex10, tex00, tex11);
+                    colorSamples(ni, j, texture.getTexel(tex10.x, tex10.y, mipmapLevel));
+                }
+
+                if (nj != j)
+                {
+                    mipmapLevel = texture.getMipmapLevel(tex01, tex11, tex00);
+                    colorSamples(i, nj, texture.getTexel(tex01.x, tex01.y, mipmapLevel));
+                }
+
+                if (ni != i && nj != j)
+                {
+                    mipmapLevel = texture.getMipmapLevel(tex11, tex01, tex10);
+                    colorSamples(ni, nj, texture.getTexel(tex11.x, tex11.y, mipmapLevel));
+                }
+            }
+        });
+
+#else
     for (int i = xmin; i < xmax + 1; i += 2)
     {
         for (int j = ymin; j < ymax + 1; j += 2)
@@ -130,16 +184,27 @@ void Rasterizer::drawTriangleTextured(const Triangle& triangle, const Texture& t
             mipmapLevel = texture.getMipmapLevel(tex00, tex10, tex01);
             colorSamples(i, j, texture.getTexel(tex00.x, tex00.y, mipmapLevel));
             
-            mipmapLevel = texture.getMipmapLevel(tex10, tex00, tex11);
-            colorSamples(ni, j, texture.getTexel(tex10.x, tex10.y, mipmapLevel));
+            if (ni != i)
+            {
+                mipmapLevel = texture.getMipmapLevel(tex10, tex00, tex11);
+                colorSamples(ni, j, texture.getTexel(tex10.x, tex10.y, mipmapLevel));
+            }
             
-            mipmapLevel = texture.getMipmapLevel(tex01, tex11, tex00);
-            colorSamples(i, nj, texture.getTexel(tex01.x, tex01.y, mipmapLevel));
+            if (nj != j)
+            {
+                mipmapLevel = texture.getMipmapLevel(tex01, tex11, tex00);
+                colorSamples(i, nj, texture.getTexel(tex01.x, tex01.y, mipmapLevel));
+            }
             
-            mipmapLevel = texture.getMipmapLevel(tex11, tex01, tex10);
-            colorSamples(ni, nj, texture.getTexel(tex11.x, tex11.y, mipmapLevel));
+            if (ni != i && nj != j)
+            {
+                mipmapLevel = texture.getMipmapLevel(tex11, tex01, tex10);
+                colorSamples(ni, nj, texture.getTexel(tex11.x, tex11.y, mipmapLevel));
+            }
         }
     }
+#endif
+
 }
 
 void Rasterizer::drawTriangleColored(const Triangle& triangle, FrameBuffer& frameBuffer)
@@ -158,6 +223,9 @@ void Rasterizer::drawTriangleColored(const Triangle& triangle, FrameBuffer& fram
     int ymin = std::max(0.0f, std::min({ p0.y, p1.y, p2.y }));
     int xmax = std::min(frameBuffer.getWidth() - 1.0f, ceil(std::max({ p0.x, p1.x, p2.x })));
     int ymax = std::min(frameBuffer.getHeight() - 1.0f, ceil(std::max({ p0.y, p1.y, p2.y })));
+
+    if (xmax < xmin || ymax < ymin)
+        return;
 
     auto getColor = [&](int i, int j) -> glm::vec3
     {
@@ -197,6 +265,34 @@ void Rasterizer::drawTriangleColored(const Triangle& triangle, FrameBuffer& fram
         }
     };
 
+#if MT
+    std::for_each(std::execution::par, m_VerticalIterator.begin() + ymin / 2, m_VerticalIterator.begin() + ymax / 2 + 1,
+        [&](int j) {
+
+            for (int i = xmin; i < xmax + 1; i += 2)
+            {
+                int ni = std::min(i + 1, xmax);
+                int nj = std::min(j + 1, ymax);
+
+                colorSamples(i, j, getColor(i, j));
+
+                if (ni != i)
+                {
+                    colorSamples(ni, j, getColor(ni, j));
+                }
+
+                if (nj != j)
+                {
+                    colorSamples(i, nj, getColor(i, nj));
+                }
+
+                if (ni != i && nj != j)
+                {
+                    colorSamples(ni, nj, getColor(ni, nj));
+                }
+            }
+        });
+#else
     for (int i = xmin; i < xmax + 1; i += 2)
     {
         for (int j = ymin; j < ymax + 1; j += 2)
@@ -205,11 +301,25 @@ void Rasterizer::drawTriangleColored(const Triangle& triangle, FrameBuffer& fram
             int nj = std::min(j + 1, ymax);
 
             colorSamples(i, j, getColor(i, j));
-            colorSamples(i, j, getColor(ni, j));
-            colorSamples(i, j, getColor(i, nj));
-            colorSamples(i, j, getColor(ni, nj));
+
+            if (ni != i)
+            {
+                colorSamples(ni, j, getColor(ni, j));
+            }
+
+            if (nj != j)
+            {
+                colorSamples(i, nj, getColor(i, nj));
+            }
+
+            if (ni != i && nj != j)
+            {
+                colorSamples(ni, nj, getColor(ni, nj));
+            }
         }
     }
+#endif
+
 }
 
 /*

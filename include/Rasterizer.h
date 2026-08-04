@@ -8,6 +8,7 @@ class Rasterizer
 private:
     RenderMode m_RenderMode;
     WindingOrder m_WindingOrder;
+    std::vector<int> m_VerticalIterator;
     /*
     bool isTopLeftEdge(utility::vec2<fp46_16> v0, utility::vec2<fp46_16> v1);
     */

@@ -8,8 +8,10 @@
 #include "rasterizer.h"
 #include "camera.h"
 
-constexpr int width = 800;
-constexpr int height = 800;
+#include <chrono>
+
+constexpr int width = 1920;
+constexpr int height = 1080;
 
 std::string africanHeadLocation = RESOURCES_PATH + std::string("obj/african_head/african_head.obj"),
     africanHeadTexLocation = RESOURCES_PATH + std::string("obj/african_head/african_head_diffuse.tga"),
@@ -48,11 +50,11 @@ void diablo(FrameBuffer& framebuffer)
 
     std::vector<glm::vec3> colors(diabloMesh.textureCoords.size(), glm::vec3(1.0, 0., 0.));
 
-    primitive_assembler::processPrimitives(vertex_processor::transformedVertices, std::vector<glm::vec3>(), colors, diabloMesh.faces, viewport);
+    primitive_assembler::processPrimitives(vertex_processor::transformedVertices, diabloMesh.textureCoords, colors, diabloMesh.faces, viewport);
 
-    r.setRenderMode(RenderMode::WIREFRAME);
+    r.setRenderMode(RenderMode::SOLID);
     r.setCulledWindingOrder(WindingOrder::CW);
-    r.draw(primitive_assembler::triangles, framebuffer);
+    r.draw(primitive_assembler::triangles, diabloTex, framebuffer);
     framebuffer.storeColorBuffer(RESOURCES_PATH + std::string("export/diablo.tga"));
 }
 
@@ -128,6 +130,7 @@ void triangle(FrameBuffer& framebuffer)
 
 int main(int argc, char** argv)
 {
+    auto start = std::chrono::steady_clock::now();
    // boggieEyeTex(boggieEyesTexLocation), boggieBodyTex(boggieBodyTexLocation),
    //     boggieHeadTex(boggieHeadTexLocation),
    //     africanHeadEyeInnerTex(africanHeadEyeInnerTexLocation), africanHeadEyeOuterTex(africanHeadEyeOuterTexLocation);
@@ -139,5 +142,11 @@ int main(int argc, char** argv)
     //triangle(framebuffer);
     diablo(framebuffer);
     //africanHead(framebuffer);
+    auto end = std::chrono::steady_clock::now();
+
+    // Calculate duration
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+
+    std::cout << "Waited for: " << elapsed.count() << " ms\n";
     return 0;
 }
